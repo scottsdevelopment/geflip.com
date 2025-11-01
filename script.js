@@ -209,12 +209,14 @@ const lookupItemBtn = document.querySelector("#lookup-item-btn");
 const calculateBtn = document.querySelector("#calculate-btn");
 const clearLogBtn = document.querySelector("#clear-log-btn");
 
+const resultStartingCapital = document.querySelector("#result-starting-capital");
+const resultItemPrice = document.querySelector("#result-item-price");
+const resultAlchValue = document.querySelector("#result-alch-value");
 const resultQuantity = document.querySelector("#result-quantity");
 const resultCost = document.querySelector("#result-cost");
 const resultLeftover = document.querySelector("#result-leftover");
-const resultAlchTotal = document.querySelector("#result-alch-total");
-const resultEnding = document.querySelector("#result-ending");
 const resultProfit = document.querySelector("#result-profit");
+const resultEnding = document.querySelector("#result-ending");
 const tradeLog = document.querySelector("#trade-log");
 
 
@@ -333,14 +335,16 @@ function calculateAlchemyTrade() {
   // Calculate profit
   const profit = endingCapital - startingCapital;
 
-  // Display results
+  // Display results (in same order as log)
+  resultStartingCapital.textContent = startingCapital.toLocaleString();
+  resultItemPrice.textContent = itemPrice.toLocaleString();
+  resultAlchValue.textContent = alchValue.toLocaleString();
   resultQuantity.textContent = quantity.toLocaleString();
   resultCost.textContent = costPaid.toLocaleString();
   resultLeftover.textContent = leftoverCapital.toLocaleString();
-  resultAlchTotal.textContent = totalFromAlching.toLocaleString();
-  resultEnding.textContent = endingCapital.toLocaleString();
   resultProfit.textContent = profit.toLocaleString();
   resultProfit.className = profit >= 0 ? "value-positive" : "value-negative";
+  resultEnding.textContent = endingCapital.toLocaleString();
 
   // Log the trade
   const logEntry = document.createElement("div");
