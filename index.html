@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- Primary Meta Tags -->
+  <title>💰 OSRS Economy Tools - Flipping Finder & Alchemy Calculator</title>
+  <meta name="title" content="💰 OSRS Economy Tools - Flipping Finder & Alchemy Calculator" />
+  <meta name="description" content="Free OSRS economy tools including a flipping finder with real-time Grand Exchange prices and an alchemy trade calculator. Find profitable items to flip and calculate high alchemy profits in Old School RuneScape." />
+  <meta name="keywords" content="OSRS, Old School RuneScape, GE flipping, Grand Exchange, high alchemy calculator, OSRS profit calculator, RuneScape tools, OSRS flipper, GE prices, OSRS economy, flipping guide, alchemy profit calculator" />
+  <meta name="author" content="OSRS Economy Tools" />
+  <meta name="robots" content="index, follow" />
+  <meta name="language" content="English" />
+  <meta name="revisit-after" content="7 days" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://osrs-economy-tools.com/" />
+  <meta property="og:title" content="💰 OSRS Economy Tools - Flipping Finder & Alchemy Calculator" />
+  <meta property="og:description" content="Free OSRS economy tools including a flipping finder with real-time Grand Exchange prices and an alchemy trade calculator. Find profitable items to flip and calculate high alchemy profits." />
+  <meta property="og:image" content="https://osrs-economy-tools.com/og-image.png" />
+  <meta property="og:site_name" content="OSRS Economy Tools" />
+  <meta property="og:locale" content="en_US" />
+  
+  <!-- Twitter -->
+  <meta property="twitter:card" content="summary_large_image" />
+  <meta property="twitter:url" content="https://osrs-economy-tools.com/" />
+  <meta property="twitter:title" content="💰 OSRS Economy Tools - Flipping Finder & Alchemy Calculator" />
+  <meta property="twitter:description" content="Free OSRS economy tools including a flipping finder with real-time Grand Exchange prices and an alchemy trade calculator. Find profitable items to flip and calculate high alchemy profits." />
+  <meta property="twitter:image" content="https://osrs-economy-tools.com/twitter-image.png" />
+  
+  <!-- Additional Meta Tags -->
+  <meta name="theme-color" content="#936039" />
+  <meta name="application-name" content="OSRS Economy Tools" />
+  <meta name="apple-mobile-web-app-title" content="OSRS Tools" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  
+  <!-- Canonical URL -->
+  <link rel="canonical" href="https://osrs-economy-tools.com/" />
+  
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+  <h1>💰 OSRS Economy Tools</h1>
+  <p>Useful tools to make profit in Old School RuneScape</p>
+
+  <div class="tabs">
+    <button type="button" class="tab-btn active" data-tab="flipping">Flipping Finder</button>
+    <button type="button" class="tab-btn" data-tab="alchemy">Alchemy Calculator</button>
+  </div>
+
+  <div id="flipping-tab" class="tab-content active">
+    <div class="controls">
+      <button id="refresh-btn">🔄 Refresh</button>
+
+      <label>
+        <input type="checkbox" id="f2p-filter" />
+        F2P Only
+      </label>
+
+      <label>
+        <input type="checkbox" id="show-all" />
+        Show Full List
+      </label>
+
+      <label>
+        Min Volume:
+        <input type="number" id="min-volume" value="5000" min="0" />
+      </label>
+
+      <input type="text" id="search-bar" placeholder="🔍 Search item..." />
+    </div>
+
+    <table id="flip-table">
+      <thead>
+        <tr>
+          <th data-sort="name">Item</th>
+          <th data-sort="low">Buy (Low)</th>
+          <th data-sort="high">Sell (High)</th>
+          <th data-sort="profit">Profit (GP)</th>
+          <th data-sort="limit">Limit</th>
+          <th data-sort="roi">ROI % (after 2% fee)</th>
+          <th data-sort="volume">Volume</th>
+          <th>5m Avg</th>
+          <th>1h Avg</th>
+          <th data-sort="alchValue">High Alch Value</th>
+          <th data-sort="alchMargin">High Alch Margin</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="11">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div id="alchemy-tab" class="tab-content">
+    <h2>Alchemy Trade Calculator</h2>
+    <div class="calculator-container">
+      <div class="calculator-inputs">
+        <h3>Trade Details</h3>
+        <label>
+          Starting Capital (GP):
+          <input type="number" id="starting-capital" value="0" min="0" />
+        </label>
+        <label>
+          <input type="checkbox" id="auto-update-capital" checked />
+          Auto-update starting capital after calculation
+        </label>
+        <label>
+          Item Price (GP):
+          <input type="number" id="item-price" value="9525" min="0" />
+        </label>
+        <label>
+          Item Name (for lookup):
+          <input type="text" id="item-name" placeholder="e.g., Rune 2h sword" />
+          <button id="lookup-item-btn">🔍 Lookup</button>
+        </label>
+        <label>
+          Alch Value (GP):
+          <input type="number" id="alch-value" value="9984" min="0" />
+        </label>
+        <label>
+          Quantity (optional):
+          <input type="number" id="quantity-input" placeholder="Leave blank for auto-calculate" min="1" />
+        </label>
+        <button type="button" id="calculate-btn">Calculate</button>
+      </div>
+
+      <div class="calculator-results">
+        <h3>Calculation Results</h3>
+        <div id="results-display">
+          <p><strong>Quantity:</strong> <span id="result-quantity">-</span></p>
+          <p><strong>Cost Paid:</strong> <span id="result-cost">-</span> GP</p>
+          <p><strong>Leftover Capital:</strong> <span id="result-leftover">-</span> GP</p>
+          <p><strong>Total from Alching:</strong> <span id="result-alch-total">-</span> GP</p>
+          <p><strong>Ending Capital:</strong> <span id="result-ending">-</span> GP</p>
+          <p><strong>Profit:</strong> <span id="result-profit">-</span> GP</p>
+        </div>
+      </div>
+
+      <div class="calculator-log">
+        <h3>Trade Log</h3>
+        <div id="trade-log"></div>
+        <button type="button" id="clear-log-btn">Clear Log</button>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>
+      Data provided by
+      <a href="https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices" target="_blank">
+        RuneScape Wiki
+      </a>
+    </p>
+    <p>Built with 💖 using Cursor</p>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+
+</html>
