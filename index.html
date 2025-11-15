@@ -56,28 +56,72 @@
   <div class="tabs">
     <button type="button" class="tab-btn active" data-tab="flipping">Flipping Finder</button>
     <button type="button" class="tab-btn" data-tab="alchemy">Alchemy Calculator</button>
+    <button type="button" class="tab-btn" data-tab="decanting">Decanting Calculator</button>
   </div>
 
   <div id="flipping-tab" class="tab-content active">
     <div class="controls">
-      <button id="refresh-btn">🔄 Refresh</button>
+      <div class="filter-row">
+        <label>
+          Min Volume:
+          <input type="number" id="min-volume" min="0" />
+        </label>
 
-      <label>
-        <input type="checkbox" id="f2p-filter" />
-        F2P Only
-      </label>
+        <label>
+          Min Buy Price:
+          <input type="number" id="min-buy-price" min="0" />
+        </label>
 
-      <label>
-        <input type="checkbox" id="show-all" />
-        Show Full List
-      </label>
+        <label>
+          Max Buy Price:
+          <input type="number" id="max-buy-price" min="0" />
+        </label>
 
-      <label>
-        Min Volume:
-        <input type="number" id="min-volume" value="5000" min="0" />
-      </label>
+        <label>
+          Min Sell Price:
+          <input type="number" id="min-sell-price" min="0" />
+        </label>
 
-      <input type="text" id="search-bar" placeholder="🔍 Search item..." />
+        <label>
+          Max Sell Price:
+          <input type="number" id="max-sell-price" min="0" />
+        </label>
+      </div>
+
+      <div class="filter-row">
+        <label>
+          Min Profit:
+          <input type="number" id="min-profit" min="0" />
+        </label>
+
+        <label>
+          Min ROI %:
+          <input type="number" id="min-roi" min="0" step="0.1" />
+        </label>
+
+        <label>
+          Limit:
+          <input type="number" id="limit-filter" min="0" />
+        </label>
+      </div>
+
+      <div class="filter-row">
+        <input type="text" id="search-bar" placeholder="🔍 Search item..." />
+      </div>
+
+      <div class="filter-row">
+        <button id="refresh-btn">🔄 Refresh</button>
+
+        <label>
+          <input type="checkbox" id="f2p-filter" />
+          F2P Only
+        </label>
+
+        <label>
+          <input type="checkbox" id="show-all" />
+          Show Full List
+        </label>
+      </div>
     </div>
 
     <table id="flip-table">
@@ -157,6 +201,60 @@
         <button type="button" id="clear-log-btn">Clear Log</button>
       </div>
     </div>
+  </div>
+
+  <div id="decanting-tab" class="tab-content">
+    <h2>Hot Item Decanting Calculator</h2>
+    <div class="controls">
+      <div class="filter-row">
+        <label>
+          Min Volume:
+          <input type="number" id="decant-min-volume" min="0" />
+        </label>
+        <label>
+          <input type="text" id="decant-search-bar" placeholder="🔍 Search potion..." />
+        </label>
+      </div>
+      <div class="filter-row">
+        <button id="decant-refresh-btn">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <table id="decant-table">
+      <thead>
+        <tr>
+          <th data-sort="name" rowspan="2">Potion</th>
+          <th colspan="4" style="text-align: center;">Volume</th>
+          <th colspan="4" style="text-align: center;">Price</th>
+          <th colspan="4" style="text-align: center;">Cost/Charge</th>
+          <th data-sort="profit1to4" rowspan="2">Profit (1→4)</th>
+          <th data-sort="profit2to4" rowspan="2">Profit (2→4)</th>
+          <th data-sort="profit3to4" rowspan="2">Profit (3→4)</th>
+          <th data-sort="profitPerDecant1" rowspan="2">Profit/Decant (1→4)</th>
+          <th data-sort="profitPerDecant2" rowspan="2">Profit/Decant (2→4)</th>
+          <th data-sort="profitPerDecant3" rowspan="2">Profit/Decant (3→4)</th>
+        </tr>
+        <tr>
+          <th data-sort="volume1">(1)</th>
+          <th data-sort="volume2">(2)</th>
+          <th data-sort="volume3">(3)</th>
+          <th data-sort="volume4">(4)</th>
+          <th data-sort="price1">(1)</th>
+          <th data-sort="price2">(2)</th>
+          <th data-sort="price3">(3)</th>
+          <th data-sort="price4">(4)</th>
+          <th data-sort="costPerCharge1">(1)</th>
+          <th data-sort="costPerCharge2">(2)</th>
+          <th data-sort="costPerCharge3">(3)</th>
+          <th data-sort="costPerCharge4">(4)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td colspan="19">Loading...</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <footer>

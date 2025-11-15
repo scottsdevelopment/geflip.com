@@ -11,6 +11,13 @@ const f2pFilterCheckbox = document.querySelector("#f2p-filter");
 const showAllCheckbox = document.querySelector("#show-all");
 const headers = document.querySelectorAll("th[data-sort]");
 const minVolumeInput = document.querySelector("#min-volume");
+const minBuyPriceInput = document.querySelector("#min-buy-price");
+const maxBuyPriceInput = document.querySelector("#max-buy-price");
+const minSellPriceInput = document.querySelector("#min-sell-price");
+const maxSellPriceInput = document.querySelector("#max-sell-price");
+const minProfitInput = document.querySelector("#min-profit");
+const minRoiInput = document.querySelector("#min-roi");
+const limitFilterInput = document.querySelector("#limit-filter");
 const searchBar = document.querySelector("#search-bar");
 
 let allItems = [];
@@ -92,13 +99,27 @@ function getItemImageUrl(name) {
 function renderTable() {
   const f2pOnly = f2pFilterCheckbox.checked;
   const showAll = showAllCheckbox.checked;
-  const minVolume = parseInt(minVolumeInput.value) || 0;
+  const minVolume = minVolumeInput.value.trim() ? parseInt(minVolumeInput.value) : null;
+  const minBuyPrice = minBuyPriceInput.value.trim() ? parseInt(minBuyPriceInput.value) : null;
+  const maxBuyPrice = maxBuyPriceInput.value.trim() ? parseInt(maxBuyPriceInput.value) : null;
+  const minSellPrice = minSellPriceInput.value.trim() ? parseInt(minSellPriceInput.value) : null;
+  const maxSellPrice = maxSellPriceInput.value.trim() ? parseInt(maxSellPriceInput.value) : null;
+  const minProfit = minProfitInput.value.trim() ? parseInt(minProfitInput.value) : null;
+  const minRoi = minRoiInput.value.trim() ? parseFloat(minRoiInput.value) : null;
+  const limitFilter = limitFilterInput.value.trim() ? parseInt(limitFilterInput.value) : null;
   const searchQuery = searchBar.value.trim().toLowerCase();
 
   let items = allItems
     .filter((i) => (!f2pOnly ? true : !i.members))
-    .filter((i) => i.volume >= minVolume)
-    .filter((i) => i.name.toLowerCase().includes(searchQuery));
+    .filter((i) => minVolume === null || i.volume >= minVolume)
+    .filter((i) => minBuyPrice === null || i.low >= minBuyPrice)
+    .filter((i) => maxBuyPrice === null || i.low <= maxBuyPrice)
+    .filter((i) => minSellPrice === null || i.high >= minSellPrice)
+    .filter((i) => maxSellPrice === null || i.high <= maxSellPrice)
+    .filter((i) => minProfit === null || i.profit >= minProfit)
+    .filter((i) => minRoi === null || i.roi >= minRoi)
+    .filter((i) => limitFilter === null || (i.limit !== undefined && i.limit >= limitFilter))
+    .filter((i) => !searchQuery || i.name.toLowerCase().includes(searchQuery));
 
   const { key, direction } = currentSort;
   items.sort((a, b) => {
@@ -170,6 +191,13 @@ refreshBtn.addEventListener("click", fetchData);
 f2pFilterCheckbox.addEventListener("change", renderTable);
 showAllCheckbox.addEventListener("change", renderTable);
 minVolumeInput.addEventListener("input", renderTable);
+minBuyPriceInput.addEventListener("input", renderTable);
+maxBuyPriceInput.addEventListener("input", renderTable);
+minSellPriceInput.addEventListener("input", renderTable);
+maxSellPriceInput.addEventListener("input", renderTable);
+minProfitInput.addEventListener("input", renderTable);
+minRoiInput.addEventListener("input", renderTable);
+limitFilterInput.addEventListener("input", renderTable);
 searchBar.addEventListener("input", renderTable);
 headers.forEach((h) => h.addEventListener("click", handleSort));
 
@@ -411,3 +439,279 @@ alchValueInput.addEventListener("keypress", (e) => {
 itemNameInput.addEventListener("keypress", (e) => {
   if (e.key === "Enter") lookupItem();
 });
+
+// 🧪 Decanting Calculator functionality
+const decantTableBody = document.querySelector("#decant-table tbody");
+const decantRefreshBtn = document.querySelector("#decant-refresh-btn");
+const decantMinVolumeInput = document.querySelector("#decant-min-volume");
+const decantSearchBar = document.querySelector("#decant-search-bar");
+const decantHeaders = document.querySelectorAll("#decant-table th[data-sort]");
+
+let allDecantData = [];
+let decantCurrentSort = { key: "profitPerDecant1", direction: "desc" };
+
+// Extract base potion name and dose from item name
+function parsePotionName(name) {
+  const match = name.match(/^(.+?)\s*\((\d+)\)$/);
+  if (match) {
+    return {
+      baseName: match[1].trim(),
+      dose: parseInt(match[2])
+    };
+  }
+  return null;
+}
+
+// Group potions by base name
+function groupPotionsByBase(items) {
+  const potionGroups = {};
+  
+  for (const item of items) {
+    const parsed = parsePotionName(item.name);
+    if (!parsed || parsed.dose < 1 || parsed.dose > 4) continue;
+    
+    if (!potionGroups[parsed.baseName]) {
+      potionGroups[parsed.baseName] = {};
+    }
+    
+    potionGroups[parsed.baseName][parsed.dose] = {
+      id: item.id,
+      name: item.name,
+      low: item.low,
+      high: item.high,
+      volume: item.volume,
+      dose: parsed.dose
+    };
+  }
+  
+  // Only return groups that have a 4-dose potion
+  const validGroups = {};
+  for (const [baseName, doses] of Object.entries(potionGroups)) {
+    if (doses[4]) {
+      validGroups[baseName] = doses;
+    }
+  }
+  
+  return validGroups;
+}
+
+// Calculate decanting profit
+// Formula: (selling price of 4-dose * number of 4-dose potions) - (buying price of lower-dose * number of lower-dose potions)
+// Empty vials are counted (they have value)
+function calculateDecantProfit(lowerDose, higherDose, numLowerDose) {
+  if (!lowerDose || !higherDose) return null;
+  
+  // Calculate how many 4-dose potions we get based on total doses
+  // 12 (1)'s = 12 doses → 3 (4)'s
+  // 6 (2)'s = 12 doses → 3 (4)'s  
+  // 4 (3)'s = 12 doses → 3 (4)'s
+  const totalDoses = numLowerDose * lowerDose.dose;
+  const numHigherDose = Math.floor(totalDoses / 4);
+  
+  if (numHigherDose === 0) return null;
+  
+  // Calculate costs and revenue
+  const buyCost = lowerDose.low * numLowerDose;
+  const sellRevenue = higherDose.high * 0.98 * numHigherDose; // 2% GE tax
+  const profit = sellRevenue - buyCost;
+  
+  return {
+    profit: Math.round(profit),
+    profitPerDecant: Math.round(profit / numHigherDose),
+    numLowerDose,
+    numHigherDose
+  };
+}
+
+async function fetchDecantData() {
+  decantTableBody.innerHTML = "<tr><td colspan='19'>Loading data...</td></tr>";
+  
+  try {
+    const [latestRes, mappingRes, volumesRes] = await Promise.all([
+      fetch(API_LATEST),
+      fetch(API_MAPPING),
+      fetch(API_VOLUMES),
+    ]);
+    
+    const latest = (await latestRes.json()).data;
+    const mapping = await mappingRes.json();
+    const volumes = (await volumesRes.json()).data;
+    
+    // Build items list with prices and volumes
+    const items = [];
+    for (const item of mapping) {
+      const id = item.id;
+      const price = latest[id];
+      const volume = volumes[id];
+      
+      if (!price || !price.high || !price.low || !volume) continue;
+      
+      items.push({
+        id,
+        name: item.name,
+        low: price.low,
+        high: price.high,
+        volume: volume
+      });
+    }
+    
+    // Group potions by base name
+    const potionGroups = groupPotionsByBase(items);
+    
+    // Calculate decanting data for each potion
+    const decantResults = [];
+    
+    for (const [baseName, doses] of Object.entries(potionGroups)) {
+      const dose4 = doses[4];
+      if (!dose4) continue;
+      
+      // Calculate cost per charge for all doses
+      const costPerCharge1 = doses[1] ? Math.round(doses[1].low / 1) : null;
+      const costPerCharge2 = doses[2] ? Math.round(doses[2].low / 2) : null;
+      const costPerCharge3 = doses[3] ? Math.round(doses[3].low / 3) : null;
+      const costPerCharge4 = Math.round(dose4.low / 4);
+      
+      // Calculate profits for different decanting scenarios
+      // Using standard quantities from wiki: 12 (1)'s, 6 (2)'s, 4 (3)'s → 3 (4)'s
+      const profit1to4 = calculateDecantProfit(doses[1], dose4, 12);
+      const profit2to4 = calculateDecantProfit(doses[2], dose4, 6);
+      const profit3to4 = calculateDecantProfit(doses[3], dose4, 4);
+      
+      decantResults.push({
+        name: baseName,
+        volume1: doses[1]?.volume || null,
+        volume2: doses[2]?.volume || null,
+        volume3: doses[3]?.volume || null,
+        volume4: dose4.volume,
+        price1: doses[1]?.low || null,
+        price2: doses[2]?.low || null,
+        price3: doses[3]?.low || null,
+        price4: dose4.low,
+        high1: doses[1]?.high || null,
+        high2: doses[2]?.high || null,
+        high3: doses[3]?.high || null,
+        high4: dose4.high,
+        costPerCharge1,
+        costPerCharge2,
+        costPerCharge3,
+        costPerCharge4,
+        profit1to4: profit1to4?.profit || null,
+        profit2to4: profit2to4?.profit || null,
+        profit3to4: profit3to4?.profit || null,
+        profitPerDecant1: profit1to4?.profitPerDecant || null,
+        profitPerDecant2: profit2to4?.profitPerDecant || null,
+        profitPerDecant3: profit3to4?.profitPerDecant || null,
+      });
+    }
+    
+    allDecantData = decantResults;
+    renderDecantTable();
+  } catch (err) {
+    console.error(err);
+    decantTableBody.innerHTML = "<tr><td colspan='19'>Error fetching data. Try again later.</td></tr>";
+  }
+}
+
+function renderDecantTable() {
+  const minVolume = decantMinVolumeInput.value.trim() ? parseInt(decantMinVolumeInput.value) : null;
+  const searchQuery = decantSearchBar.value.trim().toLowerCase();
+  
+  let potions = allDecantData
+    .filter((p) => minVolume === null || p.volume4 >= minVolume)
+    .filter((p) => !searchQuery || p.name.toLowerCase().includes(searchQuery));
+  
+  // Sort
+  const { key, direction } = decantCurrentSort;
+  potions.sort((a, b) => {
+    const aVal = a[key];
+    const bVal = b[key];
+    
+    // Handle null values
+    if (aVal === null && bVal === null) return 0;
+    if (aVal === null) return 1;
+    if (bVal === null) return -1;
+    
+    if (typeof aVal === "string") {
+      return direction === "asc"
+        ? aVal.localeCompare(bVal)
+        : bVal.localeCompare(aVal);
+    }
+    return direction === "asc" ? aVal - bVal : bVal - aVal;
+  });
+  
+  decantTableBody.innerHTML = "";
+  
+  for (const potion of potions) {
+    const row = document.createElement("tr");
+    
+    const formatValue = (val) => {
+      if (val === null) return "-";
+      return val.toLocaleString();
+    };
+    
+    const formatProfit = (val) => {
+      if (val === null) return "-";
+      const profitClass = val >= 0 ? "value-positive" : "value-negative";
+      return `<span class="${profitClass}">${val.toLocaleString()}</span>`;
+    };
+    
+    row.innerHTML = `
+      <td>
+        <img class="item-icon" src="${getItemImageUrl(potion.name + " (4)")}" onerror="this.style.display='none'" />
+        ${potion.name}
+      </td>
+      <td>${formatValue(potion.volume1)}</td>
+      <td>${formatValue(potion.volume2)}</td>
+      <td>${formatValue(potion.volume3)}</td>
+      <td>${formatValue(potion.volume4)}</td>
+      <td>${formatValue(potion.price1)}</td>
+      <td>${formatValue(potion.price2)}</td>
+      <td>${formatValue(potion.price3)}</td>
+      <td>${formatValue(potion.price4)}</td>
+      <td>${formatValue(potion.costPerCharge1)}</td>
+      <td>${formatValue(potion.costPerCharge2)}</td>
+      <td>${formatValue(potion.costPerCharge3)}</td>
+      <td>${formatValue(potion.costPerCharge4)}</td>
+      <td>${formatProfit(potion.profit1to4)}</td>
+      <td>${formatProfit(potion.profit2to4)}</td>
+      <td>${formatProfit(potion.profit3to4)}</td>
+      <td>${formatProfit(potion.profitPerDecant1)}</td>
+      <td>${formatProfit(potion.profitPerDecant2)}</td>
+      <td>${formatProfit(potion.profitPerDecant3)}</td>
+    `;
+    decantTableBody.appendChild(row);
+  }
+  
+  if (potions.length === 0) {
+    decantTableBody.innerHTML = "<tr><td colspan='19'>No potions match the current filters.</td></tr>";
+  }
+}
+
+function handleDecantSort(e) {
+  const key = e.target.dataset.sort;
+  if (!key) return;
+  
+  if (decantCurrentSort.key === key) {
+    decantCurrentSort.direction = decantCurrentSort.direction === "asc" ? "desc" : "asc";
+  } else {
+    decantCurrentSort.key = key;
+    decantCurrentSort.direction = "desc";
+  }
+  
+  decantHeaders.forEach((h) => h.classList.remove("sorted-asc", "sorted-desc"));
+  e.target.classList.add(
+    decantCurrentSort.direction === "asc" ? "sorted-asc" : "sorted-desc"
+  );
+  
+  renderDecantTable();
+}
+
+// Event listeners for decanting calculator
+decantRefreshBtn.addEventListener("click", fetchDecantData);
+decantMinVolumeInput.addEventListener("input", renderDecantTable);
+decantSearchBar.addEventListener("input", renderDecantTable);
+decantHeaders.forEach((h) => h.addEventListener("click", handleDecantSort));
+
+// Initial fetch for decanting data
+fetchDecantData();
+setInterval(fetchDecantData, 5 * 60 * 1000); // refresh every 5 minutes

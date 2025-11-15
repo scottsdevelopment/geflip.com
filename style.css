@@ -12,9 +12,32 @@ h1 {
 .controls {
   margin: 1em 0;
   display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1em;
+}
+
+.filter-row {
+  display: flex;
   justify-content: center;
   align-items: center;
   gap: 1em;
+  flex-wrap: wrap;
+}
+
+.filter-row input[type="text"] {
+  padding: 0.5em;
+  min-width: 300px;
+  border: 1px solid #94866d;
+  border-radius: 4px;
+  background: #e2dbc8;
+  color: #000;
+  font-size: 1em;
+}
+
+.filter-row input[type="text"]:focus {
+  outline: none;
+  border-color: #936039;
 }
 table {
   margin: 1em auto;
@@ -23,6 +46,14 @@ table {
   max-width: 900px;
   background: #d8ccb4;
   box-shadow: 0 0 8px rgba(0,0,0,0.3);
+}
+#decant-table {
+  max-width: 1800px;
+  font-size: 0.9em;
+}
+#decant-table th,
+#decant-table td {
+  padding: 0.4em 0.5em;
 }
 th, td {
   padding: 0.6em 0.8em;
@@ -36,6 +67,12 @@ th {
 }
 th:hover {
   background: #d0bd97;
+}
+th[colspan] {
+  cursor: default;
+}
+th[colspan]:hover {
+  background: #b8a282;
 }
 tr:nth-child(even) {
   background: #d1c6a6;
