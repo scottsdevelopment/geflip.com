@@ -79,56 +79,34 @@ export async function fetchFlippingData(): Promise<ProcessedItem[]> {
             const low = price.low;
             const high = price.high;
 
-            const highAfterFee = high * 0.98; // 2% sell tax
-            const netProfit = highAfterFee - low;
-            const roi = (netProfit / low) * 100;
-
             // 5m Data
             const item5m = fiveM[id];
             const avg5m = item5m?.avgHighPrice || "-";
             const highVol5m = item5m?.highPriceVolume || 0;
             const lowVol5m = item5m?.lowPriceVolume || 0;
-            const total5mVol = highVol5m + lowVol5m;
-            const buyPressure5m = total5mVol > 0 ? (highVol5m / total5mVol) * 100 : 0;
-            const sellPressure5m = total5mVol > 0 ? (lowVol5m / total5mVol) * 100 : 0;
 
             // 1h Data
             const item1h = oneH[id];
             const avg1h = item1h?.avgHighPrice || "-";
             const highVol1h = item1h?.highPriceVolume || 0;
             const lowVol1h = item1h?.lowPriceVolume || 0;
-            const total1hVol = highVol1h + lowVol1h;
-            const buyPressure1h = total1hVol > 0 ? (highVol1h / total1hVol) * 100 : 0;
-            const sellPressure1h = total1hVol > 0 ? (lowVol1h / total1hVol) * 100 : 0;
 
-            // Volume Ratio
-            const volRatio = total1hVol > 0 ? (total5mVol / total1hVol) : 0;
-
-            // Alch
-            const alchValue = item.highalch || null;
-            const alchMargin = alchValue !== null ? alchValue - low : null;
-
+            // Only include raw data from API
             results.push({
                 id,
                 name: item.name,
                 members: item.members,
+                limit: limit !== undefined ? limit : "-",
+                highalch: item.highalch || null,
                 low,
                 high,
-                profit: Math.round(netProfit),
-                roi: parseFloat(roi.toFixed(2)),
-                avg5m,
-                avg1h,
                 volume,
-                limit: limit !== undefined ? limit : "-",
-                alchValue,
-                alchMargin: alchMargin !== null ? Math.round(alchMargin) : null,
-                total5mVol,
-                buyPressure5m,
-                sellPressure5m,
-                total1hVol,
-                buyPressure1h,
-                sellPressure1h,
-                volRatio,
+                avg5m,
+                highVol5m,
+                lowVol5m,
+                avg1h,
+                highVol1h,
+                lowVol1h,
             });
         }
 
@@ -142,4 +120,36 @@ export async function fetchFlippingData(): Promise<ProcessedItem[]> {
 export function getItemImageUrl(name: string): string {
     const encoded = encodeURIComponent(name.replace(/ /g, "_"));
     return `https://oldschool.runescape.wiki/images/${encoded}_detail.png`;
+}
+
+export async function fetchTimeseriesForSMA(ids: number[], timestep: "24h" = "24h"): Promise<Record<number, TimeSeriesData[]>> {
+    const BATCH_SIZE = 20;
+    const results: Record<number, TimeSeriesData[]> = {};
+
+    for (let i = 0; i < ids.length; i += BATCH_SIZE) {
+        const batch = ids.slice(i, i + BATCH_SIZE);
+        try {
+            const promises = batch.map(id =>
+                fetch(`${API_TIMESERIES}?timestep=${timestep}&id=${id}`, { next: { revalidate: 3600 } })
+                    .then(res => res.json())
+                    .then(json => ({ id, data: json.data }))
+                    .catch(err => {
+                        console.error(`Error fetching timeseries for ${id}:`, err);
+                        return { id, data: [] };
+                    })
+            );
+
+            const batchResults = await Promise.all(promises);
+            batchResults.forEach(res => {
+                if (res.data) {
+                    results[res.id] = res.data;
+                }
+            });
+
+        } catch (err) {
+            console.error("Error fetching batch timeseries:", err);
+        }
+    }
+
+    return results;
 }

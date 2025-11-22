@@ -25,46 +25,29 @@ export interface TimeSeriesData {
     timestamp?: number;
 }
 
+// Simplified ProcessedItem - only contains raw API data
 export interface ProcessedItem {
+    // Core item data from mapping
     id: number;
     name: string;
     members: boolean;
+    limit: number | string;
+    highalch: number | null;
+
+    // Latest price data
     low: number;
     high: number;
-    profit: number;
-    roi: number;
-    avg5m: number | string;
-    avg1h: number | string;
-    volume: number;
-    limit: number | string;
-    alchValue: number | null;
-    alchMargin: number | null;
-    total5mVol: number;
-    buyPressure5m: number;
-    sellPressure5m: number;
-    total1hVol: number;
-    buyPressure1h: number;
-    sellPressure1h: number;
-    volRatio: number;
-}
 
-export interface FilterState {
-    f2pOnly: boolean;
-    showAll: boolean;
-    buyUnder5m: boolean;
-    minVolume: number | null;
-    minBuyPrice: number | null;
-    maxBuyPrice: number | null;
-    minSellPrice: number | null;
-    maxSellPrice: number | null;
-    minProfit: number | null;
-    minRoi: number | null;
-    limitFilter: number | null;
-    searchQuery: string;
-    min5mVol: number | null;
-    minBuyPressure5m: number | null;
-    minSellPressure5m: number | null;
-    min1hVol: number | null;
-    minBuyPressure1h: number | null;
-    minSellPressure1h: number | null;
+    // Volume data
+    volume: number; // 24h volume
+
+    // 5m data
+    avg5m: number | string;
+    highVol5m: number;
+    lowVol5m: number;
+
+    // 1h data
+    avg1h: number | string;
+    highVol1h: number;
+    lowVol1h: number;
 }

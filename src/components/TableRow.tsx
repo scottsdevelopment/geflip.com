@@ -5,6 +5,8 @@ import Link from "next/link";
 import { ProcessedItem } from "@/lib/types";
 import { getItemImageUrl } from "@/lib/api";
 import { ImageOff } from "lucide-react";
+import { CustomColumn } from "@/lib/columns/types";
+import { evaluateColumn, formatColumnValue } from "@/lib/columns/engine";
 
 interface ItemImageProps {
     name: string;
@@ -36,15 +38,17 @@ ItemImage.displayName = "ItemImage";
 
 export interface TableRowProps {
     item: ProcessedItem;
-    visibleColumns: Record<string, boolean>;
+    columns: CustomColumn[];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    rawData?: any;
 }
 
-const TableRow = memo(({ item, visibleColumns }: TableRowProps) => {
-    const isVisible = (key: string) => visibleColumns[key] ?? true;
+const TableRow = memo(({ item, columns, rawData }: TableRowProps) => {
+    const enabledColumns = columns.filter(c => c.enabled);
 
     return (
         <tr className="even:bg-[#dfd5c1] hover:bg-[#f0e6d2] transition-colors">
-            {/* Item Image */}
+            {/* Fixed Image Column */}
             <td className="p-3 border-b border-[#c9bca0]">
                 <Link
                     href={`/item/${item.id}`}
@@ -55,160 +59,53 @@ const TableRow = memo(({ item, visibleColumns }: TableRowProps) => {
                 </Link>
             </td>
 
-            {/* Item Name */}
-            {isVisible("name") && (
-                <td className="p-3 border-b border-[#c9bca0]">
-                    <Link
-                        href={`/item/${item.id}`}
-                        target="_blank"
-                        className="text-inherit no-underline hover:underline font-medium"
-                    >
-                        {item.name}
-                    </Link>
-                </td>
-            )}
+            {enabledColumns.map((col) => {
+                const value = evaluateColumn(col, { item, rawData }, columns);
+                const formatted = formatColumnValue(value, col);
 
-            {/* Buy (Low) */}
-            {isVisible("low") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.low.toLocaleString()}</td>
-            )}
+                if (col.id === "name") {
+                    return (
+                        <td key={col.id} className="p-3 border-b border-[#c9bca0]">
+                            <Link
+                                href={`/item/${item.id}`}
+                                target="_blank"
+                                className="text-inherit no-underline hover:underline font-medium"
+                            >
+                                {formatted}
+                            </Link>
+                        </td>
+                    );
+                }
 
-            {/* Sell (High) */}
-            {isVisible("high") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.high.toLocaleString()}</td>
-            )}
+                if (col.id === "profit" || col.id === "alchMargin") {
+                    const numVal = Number(value);
+                    const colorClass = numVal >= 0 ? "text-green-700 font-bold" : "text-red-700 font-bold";
+                    return (
+                        <td key={col.id} className="p-3 border-b border-[#c9bca0]">
+                            <span className={colorClass}>{formatted}</span>
+                        </td>
+                    );
+                }
 
-            {/* Profit */}
-            {isVisible("profit") && (
-                <td className="p-3 border-b border-[#c9bca0]">
-                    <span className={item.profit >= 0 ? "text-green-700 font-bold" : "text-red-700 font-bold"}>
-                        {item.profit.toLocaleString()}
-                    </span>
-                </td>
-            )}
-
-            {/* Limit */}
-            {isVisible("limit") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.limit}</td>
-            )}
-
-            {/* ROI */}
-            {isVisible("roi") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.roi}%</td>
-            )}
-
-            {/* Volume (24h) */}
-            {isVisible("volume") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.volume.toLocaleString()}</td>
-            )}
-
-            {/* 5m Avg */}
-            {isVisible("avg5m") && (
-                <td className="p-3 border-b border-[#c9bca0]">
-                    {typeof item.avg5m === "number" ? item.avg5m.toLocaleString() : "-"}
-                </td>
-            )}
-
-            {/* 5m Vol */}
-            {isVisible("total5mVol") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.total5mVol.toLocaleString()}</td>
-            )}
-
-            {/* 1h Avg */}
-            {isVisible("avg1h") && (
-                <td className="p-3 border-b border-[#c9bca0]">
-                    {typeof item.avg1h === "number" ? item.avg1h.toLocaleString() : "-"}
-                </td>
-            )}
-
-            {/* 1h Vol */}
-            {isVisible("total1hVol") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.total1hVol.toLocaleString()}</td>
-            )}
-
-            {/* 5m Buy % */}
-            {isVisible("buyPressure5m") && (
-                <td className="p-3 border-b border-[#c9bca0]">{Math.round(item.buyPressure5m)}%</td>
-            )}
-
-            {/* 5m Sell % */}
-            {isVisible("sellPressure5m") && (
-                <td className="p-3 border-b border-[#c9bca0]">{Math.round(item.sellPressure5m)}%</td>
-            )}
-
-            {/* 1h Buy % */}
-            {isVisible("buyPressure1h") && (
-                <td className="p-3 border-b border-[#c9bca0]">{Math.round(item.buyPressure1h)}%</td>
-            )}
-
-            {/* 1h Sell % */}
-            {isVisible("sellPressure1h") && (
-                <td className="p-3 border-b border-[#c9bca0]">{Math.round(item.sellPressure1h)}%</td>
-            )}
-
-            {/* 5m/1h Ratio */}
-            {isVisible("volRatio") && (
-                <td className="p-3 border-b border-[#c9bca0]">{item.volRatio.toFixed(3)}</td>
-            )}
-
-            {/* High Alch */}
-            {isVisible("alchValue") && (
-                <td className="p-3 border-b border-[#c9bca0]">
-                    {item.alchValue ? item.alchValue.toLocaleString() : "-"}
-                </td>
-            )}
-
-            {/* Alch Margin */}
-            {isVisible("alchMargin") && (
-                <td className="p-3 border-b border-[#c9bca0]">
-                    {item.alchMargin !== null ? (
-                        <span className={item.alchMargin >= 0 ? "text-green-700 font-bold" : "text-red-700 font-bold"}>
-                            {item.alchMargin.toLocaleString()}
-                        </span>
-                    ) : (
-                        "-"
-                    )}
-                </td>
-            )}
+                return (
+                    <td key={col.id} className="p-3 border-b border-[#c9bca0]">
+                        {formatted}
+                    </td>
+                );
+            })}
         </tr>
     );
 }, (prevProps, nextProps) => {
-    // Only re-render if the actual item data values changed
-    // Compare all relevant properties that are displayed in the row
-    const prevItem = prevProps.item;
-    const nextItem = nextProps.item;
+    if (prevProps.item.id !== nextProps.item.id) return false;
 
-    // First check if it's the same item by ID
-    if (prevItem.id !== nextItem.id) {
-        return false; // Different item, need to re-render
-    }
+    const prevEnabled = prevProps.columns.filter(c => c.enabled).map(c => c.id).join(",");
+    const nextEnabled = nextProps.columns.filter(c => c.enabled).map(c => c.id).join(",");
+    if (prevEnabled !== nextEnabled) return false;
 
-    // Check if any displayed values changed
-    const valuesEqual =
-        prevItem.name === nextItem.name &&
-        prevItem.low === nextItem.low &&
-        prevItem.high === nextItem.high &&
-        prevItem.profit === nextItem.profit &&
-        prevItem.limit === nextItem.limit &&
-        prevItem.roi === nextItem.roi &&
-        prevItem.volume === nextItem.volume &&
-        prevItem.avg5m === nextItem.avg5m &&
-        prevItem.total5mVol === nextItem.total5mVol &&
-        prevItem.avg1h === nextItem.avg1h &&
-        prevItem.total1hVol === nextItem.total1hVol &&
-        prevItem.buyPressure5m === nextItem.buyPressure5m &&
-        prevItem.sellPressure5m === nextItem.sellPressure5m &&
-        prevItem.buyPressure1h === nextItem.buyPressure1h &&
-        prevItem.sellPressure1h === nextItem.sellPressure1h &&
-        prevItem.volRatio === nextItem.volRatio &&
-        prevItem.alchValue === nextItem.alchValue &&
-        prevItem.alchMargin === nextItem.alchMargin;
+    if (prevProps.item !== nextProps.item) return false;
+    if (prevProps.rawData !== nextProps.rawData) return false;
 
-    // Check if visible columns changed
-    const columnsEqual = JSON.stringify(prevProps.visibleColumns) === JSON.stringify(nextProps.visibleColumns);
-
-    // Only skip re-render if both values and columns are equal
-    return valuesEqual && columnsEqual;
+    return true;
 });
 
 TableRow.displayName = "TableRow";

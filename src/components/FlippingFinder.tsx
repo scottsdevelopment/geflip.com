@@ -1,63 +1,58 @@
 "use client";
 
-
-import React, { useState } from "react";
-import { ProcessedItem, FilterState } from "@/lib/types";
-import Filters from "./Filters";
+import React, { useState, useEffect } from "react";
+import { ProcessedItem } from "@/lib/types";
 import FlippingTable from "./FlippingTable";
 import { useItemData } from "@/context/ItemDataContext";
+import SavedFilterManager from "./SavedFilterManager";
+import { SavedFilter } from "@/lib/filters/types";
+import { loadFilters, addFilter, updateFilter, deleteFilter, toggleFilter } from "@/lib/filters/storage";
+import { PRESET_FILTERS } from "@/lib/filters/presets";
+import { evaluateFilters } from "@/lib/filters/engine";
 
-const initialFilters: FilterState = {
-    f2pOnly: false,
-    showAll: false,
-    buyUnder5m: false,
-    minVolume: null,
-    minBuyPrice: null,
-    maxBuyPrice: null,
-    minSellPrice: null,
-    maxSellPrice: null,
-    minProfit: null,
-    minRoi: null,
-    limitFilter: null,
-    searchQuery: "",
-    min5mVol: null,
-    minBuyPressure5m: null,
-    minSellPressure5m: null,
-    min1hVol: null,
-    minBuyPressure1h: null,
-    minSellPressure1h: null,
-};
+import { CustomColumn } from "@/lib/columns/types";
+import { loadColumns } from "@/lib/columns/storage";
+import { PRESET_COLUMNS } from "@/lib/columns/presets";
 
 export default function FlippingFinder() {
     const { items, loading } = useItemData();
-    const [filters, setFilters] = useState<FilterState>(initialFilters);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [savedFilters, setSavedFilters] = useState<SavedFilter[]>(PRESET_FILTERS);
+    const [customColumns, setCustomColumns] = useState<CustomColumn[]>(PRESET_COLUMNS);
+
+    useEffect(() => {
+        loadFilters().then(setSavedFilters);
+        loadColumns().then(setCustomColumns);
+    }, []);
+
+    const handleAddFilter = async (filter: SavedFilter) => {
+        const newFilters = await addFilter(filter);
+        setSavedFilters(newFilters);
+    };
+
+    const handleUpdateFilter = async (filter: SavedFilter) => {
+        const newFilters = await updateFilter(filter.id, filter);
+        setSavedFilters(newFilters);
+    };
+
+    const handleDeleteFilter = async (id: string) => {
+        const newFilters = await deleteFilter(id);
+        setSavedFilters(newFilters);
+    };
+
+    const handleToggleFilter = async (id: string) => {
+        const newFilters = await toggleFilter(id);
+        setSavedFilters(newFilters);
+    };
 
     // Filter logic
     const filteredItems = items.filter((item) => {
-        if (filters.f2pOnly && item.members) return false;
-        if (filters.minVolume !== null && item.volume < filters.minVolume) return false;
-        if (filters.minBuyPrice !== null && item.low < filters.minBuyPrice) return false;
-        if (filters.maxBuyPrice !== null && item.low > filters.maxBuyPrice) return false;
-        if (filters.minSellPrice !== null && item.high < filters.minSellPrice) return false;
-        if (filters.maxSellPrice !== null && item.high > filters.maxSellPrice) return false;
-        if (filters.minProfit !== null && item.profit < filters.minProfit) return false;
-        if (filters.minRoi !== null && item.roi < filters.minRoi) return false;
-        if (filters.limitFilter !== null && (typeof item.limit !== "number" || item.limit < filters.limitFilter)) return false;
+        // 1. Apply Saved Filters (JSON Logic)
+        if (!evaluateFilters(item, savedFilters, customColumns)) return false;
 
-        if (filters.buyUnder5m) {
-            if (typeof item.avg5m !== "number" || item.low >= item.avg5m) return false;
-        }
-
-        if (filters.min5mVol !== null && item.total5mVol < filters.min5mVol) return false;
-        if (filters.minBuyPressure5m !== null && item.buyPressure5m < filters.minBuyPressure5m) return false;
-        if (filters.minSellPressure5m !== null && item.sellPressure5m < filters.minSellPressure5m) return false;
-
-        if (filters.min1hVol !== null && item.total1hVol < filters.min1hVol) return false;
-        if (filters.minBuyPressure1h !== null && item.buyPressure1h < filters.minBuyPressure1h) return false;
-        if (filters.minSellPressure1h !== null && item.sellPressure1h < filters.minSellPressure1h) return false;
-
-        if (filters.searchQuery) {
-            const query = filters.searchQuery.toLowerCase();
+        // 2. Apply Search
+        if (searchQuery) {
+            const query = searchQuery.toLowerCase();
             if (!item.name.toLowerCase().includes(query)) return false;
         }
 
@@ -66,11 +61,21 @@ export default function FlippingFinder() {
 
     return (
         <div id="flipping-tab" className="block w-full">
-            <Filters filters={filters} setFilters={setFilters} />
+            <SavedFilterManager
+                filters={savedFilters}
+                onAddFilter={handleAddFilter}
+                onUpdateFilter={handleUpdateFilter}
+                onDeleteFilter={handleDeleteFilter}
+                onToggleFilter={handleToggleFilter}
+            />
             {loading && items.length === 0 ? (
                 <div className="text-center p-4 text-osrs-text">Loading data...</div>
             ) : (
-                <FlippingTable items={filteredItems} />
+                <FlippingTable
+                    items={filteredItems}
+                    searchQuery={searchQuery}
+                    onSearchChange={setSearchQuery}
+                />
             )}
         </div>
     );
