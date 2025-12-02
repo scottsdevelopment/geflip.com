@@ -33,7 +33,7 @@ const ItemImage = memo(({ name }: ItemImageProps) => {
 
     return (
         <img
-            className="w-6 h-6 inline-block align-middle"
+            className="w-6 h-6 inline-block align-middle object-contain"
             src={src}
             alt={name}
             onError={() => setError(true)}

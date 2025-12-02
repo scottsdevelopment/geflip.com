@@ -32,12 +32,12 @@ export default function Navbar() {
         <>
             <nav className="sticky top-0 z-50 bg-osrs-primary text-osrs-text-light h-14 flex items-center justify-between px-4 shadow-md border-b border-osrs-border">
                 {/* Left Section: Logo */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     <Link href="/" className="flex items-center gap-2 hover:text-white transition-colors">
                         <div className="w-8 h-8 bg-osrs-accent rounded-full flex items-center justify-center border border-osrs-border">
                             <Image src="/icon.png" alt="GE Flip Icon" width={18} height={18} className="object-contain" />
                         </div>
-                        <span className="font-header font-bold text-lg tracking-wide text-osrs-text-light hidden sm:inline">GE Flip</span>
+                        <span className="font-header font-bold text-sm sm:text-lg tracking-wide text-osrs-text-light">GE Flip</span>
                     </Link>
                 </div>
 
@@ -91,7 +91,7 @@ export default function Navbar() {
                             onClick={() => setShowMoreDropdown(!showMoreDropdown)}
                             className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-osrs-accent text-osrs-nav-inactive hover:text-osrs-text-light transition-colors"
                         >
-                            <span className="text-sm font-medium hidden sm:inline">More</span>
+                            <span className="text-sm font-medium">More</span>
                             <ChevronDown size={16} />
                         </button>
 

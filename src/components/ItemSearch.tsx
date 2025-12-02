@@ -75,7 +75,7 @@ export default function ItemSearch({ items, placeholder = "Search for an item...
                                     alt={item.name}
                                     width={24}
                                     height={24}
-                                    className="object-contain"
+                                    className="w-6 h-6 object-contain"
                                     onError={(e) => {
                                         e.currentTarget.style.display = "none";
                                     }}

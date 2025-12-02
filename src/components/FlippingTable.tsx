@@ -4,7 +4,6 @@ import React, { useState, useEffect, useMemo, useCallback } from "react";
 import { ArrowUp, ArrowDown, Heart } from "lucide-react";
 import Tooltip from "./Tooltip";
 import Pagination from "./Pagination";
-import CustomColumnManager from "./CustomColumnManager";
 import TableRow from "./TableRow";
 import { evaluateColumn } from "@/lib/columns/engine";
 import { TimeseriesCache } from "@/lib/timeseries/cache";
@@ -232,7 +231,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
             {/* Table and Pagination Container */}
             <div className="w-full">
                 {/* Sticky Header Container for Search and Pagination */}
-                <div className="sticky top-14 z-30 pt-2 bg-osrs-bg">
+                <div className="z-30 pt-2 bg-osrs-bg">
                     {/* Search Bar */}
                     <div className="mb-4">
                         <input
@@ -255,9 +254,9 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                     />
                 </div>
 
-                <div className="overflow-auto relative scrollbar-thin scrollbar-thumb-osrs-accent scrollbar-track-osrs-panel">
-                    <table className="w-full border-separate border-spacing-0 bg-osrs-panel shadow-lg overflow-hidden border border-osrs-border">
-                        <thead className=" top-0 z-20">
+                <div className="max-h-[90vh] overflow-auto relative scrollbar-thin scrollbar-thumb-osrs-accent scrollbar-track-osrs-panel">
+                    <table className="relative w-full border-separate border-spacing-0 bg-osrs-panel shadow-lg overflow-hidden border border-osrs-border">
+                        <thead>
                             {loading && items.length === 0 ? (
                                 <SkeletonTableHeader />
                             ) : (
@@ -281,8 +280,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                             }}
                                             onClick={() => handleSort(col.id)}
                                             colSpan={col.id === "name" ? 2 : 1}
-                                            className={`p-3 h-12 bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm text-center ${sortKey === col.id ? "bg-osrs-button-hover" : ""
-                                                }`}
+                                            className={`sticky left-0 top-0 z-20 p-3 h-12 bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm text-center ${sortKey === col.id ? "bg-osrs-button-hover" : ""}`}
                                         >
                                             <Tooltip content={col.description || ""}>
                                                 <div className="flex items-center justify-center gap-1 w-full h-full">
