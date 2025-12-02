@@ -84,6 +84,17 @@ export default function RootLayout({
               RuneScape Wiki
             </a>
           </p>
+          <p className="mt-2">
+            Buy me a bond on{" "}
+            <a
+              href="https://ko-fi.com/scottsdevelopment"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-osrs-accent hover:underline"
+            >
+              Ko-fi
+            </a>
+          </p>
         </footer>
       </body>
     </html>

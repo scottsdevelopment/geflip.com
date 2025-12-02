@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo, useCallback } from "react";
-import { ArrowUp, ArrowDown } from "lucide-react";
+import { ArrowUp, ArrowDown, Heart } from "lucide-react";
 import Tooltip from "./Tooltip";
 import Pagination from "./Pagination";
 import CustomColumnManager from "./CustomColumnManager";
@@ -30,6 +30,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
     const loading = useItemsStore(state => state.loading);
     const columns = useColumnsStore(state => state.columns);
     const handleColumnReorder = useColumnsStore(state => state.handleColumnReorder);
+    const handleToggleColumn = useColumnsStore(state => state.handleToggleColumn);
     const savedFilters = useFiltersStore(state => state.savedFilters);
     const isFavorite = useFavoritesStore(state => state.isFavorite);
 
@@ -124,6 +125,17 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
         });
     }, [items, searchQuery, filters, columns, updateTrigger, isFavorite]);
 
+    // Auto-enable/disable Action column based on whether actions exist
+    useEffect(() => {
+        const hasActions = processedItems.some((i: any) => i._action);
+        const actionColumn = columns.find(c => c.id === "action");
+
+        if (actionColumn && actionColumn.enabled !== hasActions) {
+            handleToggleColumn("action");
+        }
+    }, [processedItems, columns, handleToggleColumn]);
+
+
     // Sorting
     const handleSort = useCallback((key: string) => {
         setSort(key);
@@ -210,21 +222,17 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
         );
     };
 
-
-
     const enabledColumns = columns.filter(c => c.enabled);
     // Check if any visible item has an action
     const showActionColumn = processedItems.some((i: any) => i._action);
 
     return (
         <div>
-            {/* Column Manager */}
-            <CustomColumnManager />
 
             {/* Table and Pagination Container */}
             <div className="w-full">
                 {/* Sticky Header Container for Search and Pagination */}
-                <div className="sticky top-14 z-30 bg-osrs-bg pt-2 shadow-sm">
+                <div className="sticky top-14 z-30 pt-2 bg-osrs-bg">
                     {/* Search Bar */}
                     <div className="mb-4">
                         <input
@@ -232,7 +240,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                             placeholder="Search items..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full p-3 border border-osrs-border rounded bg-osrs-input text-osrs-text focus:outline-none focus:border-osrs-accent focus:ring-2 focus:ring-osrs-accent/20 transition-all font-bold"
+                            className="w-full p-3 shadow-sm border border-osrs-border rounded bg-osrs-input text-osrs-text focus:outline-none focus:border-osrs-accent focus:ring-2 focus:ring-osrs-accent/20 transition-all font-bold"
                         />
                     </div>
 
@@ -247,22 +255,13 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                     />
                 </div>
 
-                <div className="overflow-auto relative max-h-[75vh] scrollbar-thin scrollbar-thumb-osrs-accent scrollbar-track-osrs-panel">
+                <div className="overflow-auto relative scrollbar-thin scrollbar-thumb-osrs-accent scrollbar-track-osrs-panel">
                     <table className="w-full border-separate border-spacing-0 bg-osrs-panel shadow-lg overflow-hidden border border-osrs-border">
-                        <thead>
+                        <thead className=" top-0 z-20">
                             {loading && items.length === 0 ? (
                                 <SkeletonTableHeader />
                             ) : (
                                 <tr>
-                                    {showActionColumn && (
-                                        <th
-                                            onClick={() => handleSort("_action")}
-                                            className="sticky top-0 z-20 p-3 text-left bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm"
-                                        >
-                                            Action <SortIcon columnId="_action" />
-                                        </th>
-                                    )}
-
                                     {enabledColumns.map((col) => (
                                         <th
                                             key={col.id}
@@ -282,18 +281,22 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                             }}
                                             onClick={() => handleSort(col.id)}
                                             colSpan={col.id === "name" ? 2 : 1}
-                                            className={`sticky top-0 z-20 p-3 bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm ${col.id === "name" ? "text-center" : "text-left"} ${sortKey === col.id ? "bg-osrs-button-hover" : ""
+                                            className={`p-3 h-12 bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm text-center ${sortKey === col.id ? "bg-osrs-button-hover" : ""
                                                 }`}
                                         >
                                             <Tooltip content={col.description || ""}>
-                                                <div className="flex items-center justify-center gap-1 w-full">
+                                                <div className="flex items-center justify-center gap-1 w-full h-full">
                                                     {col.id === "low" && (
                                                         <img src={BUY_ICON} alt="Buy" className="w-3 h-3 object-contain" />
                                                     )}
                                                     {col.id === "high" && (
                                                         <img src={SELL_ICON} alt="Sell" className="w-3 h-3 object-contain" />
                                                     )}
-                                                    <span>{col.name}</span>
+                                                    {col.id === "favorite" ? (
+                                                        <Heart size={16} className="text-osrs-primary fill-current" />
+                                                    ) : (
+                                                        <span>{col.name}</span>
+                                                    )}
                                                     <SortIcon columnId={col.id} />
                                                 </div>
                                             </Tooltip>

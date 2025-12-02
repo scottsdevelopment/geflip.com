@@ -13,6 +13,7 @@ import { Spinner } from "./Spinner";
 import { NON_MEMBER_ICON, MEMBER_ICON } from "@/lib/constants/icons";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { Heart } from "lucide-react";
+import { getCurrencyClass } from "@/lib/currency";
 
 interface ItemImageProps {
     name: string;
@@ -115,41 +116,41 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
 
     return (
         <tr className="even:bg-osrs-table-even hover:bg-osrs-table-hover transition-colors">
-            {showActionColumn && (
-                <td className="p-3 border-b border-osrs-border-light">
-                    {action && (
-                        <span className="inline-block px-2 py-1 text-xs font-bold text-white bg-osrs-accent rounded shadow-sm">
-                            {action}
-                        </span>
-                    )}
-                </td>
-            )}
-
             {enabledColumns.map((col) => {
                 const value = evaluateColumn(col, { item, cache }, columns, cache);
                 const formatted = formatColumnValue(value, col);
                 const isLoading = loadingColumns.has(col.id) && value === null;
 
+                if (col.id === "action") {
+                    return (
+                        <td key={col.id} className="p-3 h-12 border-b border-osrs-border-light text-center">
+                            {(item as any)._action && (
+                                <span className="inline-block px-2 py-1 text-xs font-bold text-white bg-osrs-accent rounded shadow-sm">
+                                    {(item as any)._action}
+                                </span>
+                            )}
+                        </td>
+                    );
+                }
+
                 if (col.id === "name") {
                     return (
                         <React.Fragment key={col.id}>
-                            <td className="p-3 border-b border-osrs-border-light w-10">
-                                <div className="flex items-center justify-start">
+                            <td className="p-3 h-12 border-b border-osrs-border-light w-10">
+                                <div className="flex items-center justify-start h-full">
                                     <Link
                                         href={`/item/${generateSlug(item.name)}`}
-                                        target="_blank"
                                         className="w-6 h-6 flex items-center justify-center text-inherit no-underline"
                                     >
                                         <ItemImage name={item.name} />
                                     </Link>
                                 </div>
                             </td>
-                            <td className="p-3 border-b border-osrs-border-light">
-                                <div className="flex items-center justify-center">
+                            <td className="p-3 h-12 border-b border-osrs-border-light">
+                                <div className="flex items-center justify-center h-full">
                                     <Link
                                         href={`/item/${generateSlug(item.name)}`}
-                                        target="_blank"
-                                        className="text-inherit no-underline hover:underline font-medium"
+                                        className="text-inherit no-underline hover:underline font-medium whitespace-nowrap"
                                     >
                                         {formatted}
                                     </Link>
@@ -161,14 +162,14 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
 
                 if (col.id === "favorite") {
                     return (
-                        <td key={col.id} className="p-3 border-b border-osrs-border-light">
+                        <td key={col.id} className="p-3 h-12 border-b border-osrs-border-light text-center">
                             <button
                                 onClick={(e) => {
                                     e.preventDefault();
                                     e.stopPropagation();
                                     toggleFavorite(item.id);
                                 }}
-                                className="focus:outline-none hover:scale-110 transition-transform"
+                                className="focus:outline-none hover:scale-110 transition-transform flex items-center justify-center w-full h-full"
                             >
                                 <Heart
                                     className={`w-4 h-4 ${isFavoriteItem ? "fill-osrs-primary text-osrs-primary" : "text-osrs-text opacity-40 hover:opacity-100"}`}
@@ -181,12 +182,14 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
                 if (col.format === "currency") {
                     const numVal = Number(value);
                     const colorClass = numVal >= 0 ? "text-osrs-profit font-bold" : "text-osrs-loss font-bold";
+                    const coinClass = getCurrencyClass(numVal);
+
                     return (
-                        <td key={col.id} className="p-3 border-b border-osrs-border-light">
+                        <td key={col.id} className="p-3 h-12 border-b border-osrs-border-light text-center">
                             {isLoading ? (
                                 <Spinner size="sm" />
                             ) : (
-                                <span className={colorClass}>{formatted}</span>
+                                <span className={`${colorClass} ${coinClass}`}>{formatted}</span>
                             )}
                         </td>
                     );
@@ -194,8 +197,8 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
 
                 if (col.id === "members") {
                     return (
-                        <td key={col.id} className="p-3 border-b border-osrs-border-light">
-                            <div className="flex items-center justify-center">
+                        <td key={col.id} className="p-3 h-12 border-b border-osrs-border-light text-center">
+                            <div className="flex items-center justify-center h-full">
                                 <img
                                     src={item.members ? MEMBER_ICON : NON_MEMBER_ICON}
                                     alt={item.members ? "Member" : "Non-Member"}
@@ -206,21 +209,9 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
                     );
                 }
 
-                if (col.id === "low") {
+                if (col.id === "low" || col.id === "high") {
                     return (
-                        <td key={col.id} className="p-3 border-b border-osrs-border-light align-middle">
-                            {isLoading ? (
-                                <Spinner size="sm" />
-                            ) : (
-                                <span>{formatted}</span>
-                            )}
-                        </td>
-                    );
-                }
-
-                if (col.id === "high") {
-                    return (
-                        <td key={col.id} className="p-3 border-b border-osrs-border-light align-middle">
+                        <td key={col.id} className="p-3 h-12 border-b border-osrs-border-light align-middle text-center">
                             {isLoading ? (
                                 <Spinner size="sm" />
                             ) : (
@@ -231,7 +222,7 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
                 }
 
                 return (
-                    <td key={col.id} className="p-3 border-b border-osrs-border-light">
+                    <td key={col.id} className="p-3 h-12 border-b border-osrs-border-light text-center">
                         {isLoading ? <Spinner size="sm" /> : formatted}
                     </td>
                 );

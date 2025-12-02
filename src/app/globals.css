@@ -43,7 +43,6 @@ body {
   color: rgb(var(--foreground-rgb));
   background: rgb(var(--background-rgb));
   font-family: var(--font-main);
-  text-align: center;
   line-height: 1.6;
 }
 
@@ -71,4 +70,85 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-osrs-primary);
+}
+
+/* Currency Icons */
+.coins-10000 {
+  background-image: url('/images/Coins_10000.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding: 3px 0 3px 20px;
+}
+
+.coins-1000 {
+  background-image: url('/images/Coins_1000.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding: 1px 0 1px 20px;
+}
+
+.coins-250 {
+  background-image: url('/images/Coins_250.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding: 1px 0 1px 20px;
+}
+
+.coins-100 {
+  background-image: url('/images/Coins_100.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding: 1px 0 1px 20px;
+}
+
+.coins-25 {
+  background-image: url('/images/Coins_25.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding-left: 20px;
+}
+
+.coins-5 {
+  background-image: url('/images/Coins_5.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding-left: 20px;
+}
+
+.coins-4 {
+  background-image: url('/images/Coins_4.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding-left: 20px;
+}
+
+.coins-3 {
+  background-image: url('/images/Coins_3.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding-left: 20px;
+}
+
+.coins-2 {
+  background-image: url('/images/Coins_2.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding-left: 18px;
+}
+
+.coins-1 {
+  background-image: url('/images/Coins_1.png');
+  background-repeat: no-repeat;
+  background-position: left center;
+  background-size: 14px auto;
+  padding-left: 18px;
 }

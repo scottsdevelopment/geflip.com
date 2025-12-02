@@ -12,6 +12,15 @@ export const PRESET_COLUMNS: CustomColumn[] = [
         description: "Favorite items"
     },
     {
+        id: "action",
+        name: "Action",
+        expression: "item._action",
+        type: "string",
+        enabled: false,
+        group: "Core",
+        description: "Action to take based on filters"
+    },
+    {
         id: "name",
         name: "Item",
         expression: "item.name",

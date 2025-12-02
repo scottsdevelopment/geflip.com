@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, Edit2, Trash2, Code, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronUp, Edit2, Trash2, Code, Sparkles, Filter } from "lucide-react";
 import { SavedFilter } from "@/lib/filters/types";
 import FilterBuilder from "./FilterBuilder";
 import SimpleFilterBuilder from "./SimpleFilterBuilder";
@@ -193,7 +193,10 @@ export default function SavedFilterManager({
                 onClick={() => togglePanel('filters')}
                 className="w-full px-4 py-3 bg-osrs-button text-osrs-text-dark font-header font-bold flex items-center justify-between hover:bg-osrs-button-hover transition-colors"
             >
-                <span>Filters</span>
+                <div className="flex items-center gap-2">
+                    <Filter className="w-5 h-5" />
+                    <span>Filters</span>
+                </div>
                 {isExpanded ? (
                     <ChevronUp className="w-5 h-5" />
                 ) : (

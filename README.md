@@ -2,7 +2,7 @@
 
 A comprehensive web application for Old School RuneScape (OSRS) players to find profitable flipping opportunities and calculate high alchemy profits using real-time Grand Exchange data.
 
-**Live Site:** [https://scottsdevelopment.github.io/osrs-economy-tools/](https://scottsdevelopment.github.io/osrs-economy-tools/)
+**Live Site:** [https://geflip.com](https://geflip.com)
 
 ## 📋 Table of Contents
 
@@ -34,10 +34,11 @@ The main feature of GE Flip is the **Flipping Finder**, a powerful tool for disc
   - Toggle visibility of 20+ preset columns
   - Create custom columns using mathematical expressions
   - Reorder columns via drag-and-drop
+  - **Smart Action Column**: Automatically shows when filters trigger specific actions
   - Column groups: Core, Profit, Volume, Averages, Alchemy
 - **Key Metrics**:
   - ROI % (Return on Investment)
-  - Margin (profit per item after 2% GE tax)
+  - Margin (profit per item after 1% GE tax)
   - Potential Profit (margin × buy limit)
   - Daily Volume
   - Margin × Volume (estimated daily profit potential)
@@ -68,6 +69,12 @@ Click any item to view its dedicated page with:
 - **Volume Data**: See trading volume over time
 - **Item Information**: Full item details including examine text, members status, and more
 - **Quick Actions**: Favorite items directly from the detail page
+
+### 🆕 New Features
+
+- **Changelog**: Stay updated with the latest changes via the `/changelog` page
+- **Help Center**: Learn about presets and advanced expressions on the `/help` page
+- **Mobile Optimized**: Improved mobile experience with responsive menus and tables
 
 ### 🎨 User Experience
 
@@ -134,8 +141,8 @@ Click any item to view its dedicated page with:
 
 1. **Clone the repository**:
    ```bash
-   git clone https://github.com/scottsdevelopment/osrs-economy-tools.git
-   cd osrs-economy-tools
+   git clone https://github.com/scottsdevelopment/geflip.com.git
+   cd geflip.com
    ```
 
 2. **Install dependencies**:
@@ -168,7 +175,7 @@ Click any item to view its dedicated page with:
    - Click "Filters" button
    - Use preset filters or create custom ones
    - Enable/disable filters with checkboxes
-4. **Favorite items** by clicking the star icon
+4. **Favorite items** by clicking the heart icon
 5. **Click an item** to view detailed price history
 
 ### Creating Custom Filters
@@ -206,7 +213,7 @@ Click any item to view its dedicated page with:
 
 ### Using the Alchemy Calculator
 
-1. Navigate to "More" → "Alchemy" in the navbar
+1. Navigate to "More" → "Alchemy" in the navbar (Note: Currently hidden in main menu, accessible via direct link if enabled)
 2. Adjust the Nature Rune Cost if needed (defaults to current GE price)
 3. Search for specific items or browse the table
 4. Sort by "Profit" or "Profit/Hr" to find the best alch items
@@ -215,7 +222,7 @@ Click any item to view its dedicated page with:
 ## 📁 Project Structure
 
 ```
-osrs-flipper/
+geflip.com/
 ├── .agent/                    # Agent workflows
 │   └── workflows/
 │       └── deploy.md         # Deployment instructions
@@ -228,6 +235,8 @@ osrs-flipper/
 ├── src/
 │   ├── app/                  # Next.js App Router pages
 │   │   ├── alchemy/          # Alchemy calculator page
+│   │   ├── changelog/        # Changelog page
+│   │   ├── help/             # Help & Documentation
 │   │   ├── item/[slug]/      # Dynamic item detail pages
 │   │   ├── layout.tsx        # Root layout with metadata
 │   │   ├── page.tsx          # Home page (Flipping Finder)
@@ -275,7 +284,7 @@ osrs-flipper/
 │   │   ├── useItemsStore.ts
 │   │   ├── useMappingsStore.ts
 │   │   ├── useTimeseriesStore.ts
-│   │   └── useUIStore.ts
+│   │   ├── useUIStore.ts
 │   └── styles/               # Additional styles
 ├── next.config.ts            # Next.js configuration
 ├── tailwind.config.ts        # Tailwind CSS configuration
@@ -327,7 +336,7 @@ The static files will be output to the `out/` directory.
 
 - **Base Path**: Set in `next.config.ts` to match your repository name
 - **GitHub Pages**: Enabled in repository settings → Pages → Source: GitHub Actions
-- **Domain**: Automatically deployed to `https://scottsdevelopment.github.io/osrs-economy-tools/`
+- **Domain**: Automatically deployed to `https://geflip.com`
 
 ## 🤝 Contributing
 
@@ -381,7 +390,7 @@ This project is open source and available for personal and educational use.
 ## 📧 Contact
 
 - **GitHub**: [@scottsdevelopment](https://github.com/scottsdevelopment)
-- **Website**: [https://scottsdevelopment.github.io/osrs-economy-tools/](https://scottsdevelopment.github.io/osrs-economy-tools/)
+- **Website**: [https://geflip.com](https://geflip.com)
 
 ---
 

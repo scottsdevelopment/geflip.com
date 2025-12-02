@@ -6,6 +6,7 @@ import SavedFilterManager from "./SavedFilterManager";
 import { SavedFilter } from "@/lib/filters/types";
 import { useItemsStore } from "@/stores/useItemsStore";
 import { useFiltersStore } from "@/stores/useFiltersStore";
+import CustomColumnManager from "./CustomColumnManager";
 
 export default function FlippingFinder() {
     const items = useItemsStore(state => state.items);
@@ -28,6 +29,9 @@ export default function FlippingFinder() {
             <SavedFilterManager
                 onPreviewFilter={handlePreviewFilter}
             />
+
+            <CustomColumnManager />
+
             <FlippingTable
                 filters={effectiveFilters}
             />

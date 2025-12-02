@@ -84,15 +84,43 @@ export default function FilterBuilder({
     }, [initialFilter, isOpen, initialCode, inline]);
 
 
-    // Report code changes and trigger preview
+    // Report code changes and trigger preview (debounced)
     useEffect(() => {
-        const code = expressions.map(e => e.code).join(" and ");
-        if (onCodeChange) {
-            onCodeChange(code);
-        }
+        const timeoutId = setTimeout(() => {
+            const code = expressions.map(e => e.code).join(" and ");
+            if (onCodeChange) {
+                onCodeChange(code);
+            }
 
-        if (onPreview) {
-            // Create a temporary filter for preview
+            if (onPreview) {
+                // Create a temporary filter for preview
+                const tempFilter: SavedFilter = {
+                    id: "preview",
+                    name: filterName,
+                    category: category,
+                    description: description,
+                    expressions: expressions,
+                    enabled: true,
+                    independent: independent
+                };
+                onPreview(tempFilter);
+            }
+        }, 300); // 300ms debounce
+
+        return () => clearTimeout(timeoutId);
+    }, [expressions, filterName, category, description, independent, onCodeChange, onPreview]);
+
+    // Count matching items for internal preview (debounced)
+    const [matchCount, setMatchCount] = useState(0);
+
+    useEffect(() => {
+        const timeoutId = setTimeout(() => {
+            if (!items.length) {
+                setMatchCount(0);
+                return;
+            }
+
+            // Create temporary filter
             const tempFilter: SavedFilter = {
                 id: "preview",
                 name: filterName,
@@ -102,41 +130,30 @@ export default function FilterBuilder({
                 enabled: true,
                 independent: independent
             };
-            onPreview(tempFilter);
-        }
-    }, [expressions, filterName, category, description, independent, onCodeChange, onPreview]);
 
-    // Count matching items for internal preview
-    const matchCount = React.useMemo(() => {
-        if (!items.length) return 0;
+            // Filter valid expressions
+            const validExpressions = expressions.filter(e => e.code.trim() && validateExpressionString(e.code));
+            if (validExpressions.length === 0) {
+                setMatchCount(0);
+                return;
+            }
 
-        // Create temporary filter
-        const tempFilter: SavedFilter = {
-            id: "preview",
-            name: filterName,
-            category: category,
-            description: description,
-            expressions: expressions,
-            enabled: true,
-            independent: independent
-        };
+            // Use only valid expressions for counting
+            const filterToTest = { ...tempFilter, expressions: validExpressions };
 
-        // Filter valid expressions
-        const validExpressions = expressions.filter(e => e.code.trim() && validateExpressionString(e.code));
-        if (validExpressions.length === 0) return 0;
+            try {
+                const count = items.filter((item) => {
+                    const results = evaluateFilters(item, [filterToTest], columns, items);
+                    return results.length > 0;
+                }).length;
+                setMatchCount(count);
+            } catch (e) {
+                console.error("Error evaluating filter preview:", e);
+                setMatchCount(0);
+            }
+        }, 300); // 300ms debounce
 
-        // Use only valid expressions for counting
-        const filterToTest = { ...tempFilter, expressions: validExpressions };
-
-        try {
-            return items.filter((item) => {
-                const results = evaluateFilters(item, [filterToTest], columns, items);
-                return results.length > 0;
-            }).length;
-        } catch (e) {
-            console.error("Error evaluating filter preview:", e);
-            return 0;
-        }
+        return () => clearTimeout(timeoutId);
     }, [expressions, items, columns, filterName, category, description, independent]);
 
     const handleAddExpression = () => {

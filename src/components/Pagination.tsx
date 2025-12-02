@@ -37,7 +37,7 @@ export default function Pagination({
     };
 
     return (
-        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-osrs-panel border-2 border-osrs-border rounded-t-lg">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 p-4 bg-osrs-panel border-1 border-osrs-border rounded-t-lg">
             {/* Items count */}
             <div className="text-sm text-osrs-text font-body w-[250px]">
                 {loading ? (

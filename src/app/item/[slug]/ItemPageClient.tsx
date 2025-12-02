@@ -83,7 +83,12 @@ export default function ItemPageClient({ slug }: ItemPageClientProps) {
         };
     }, [slug, mappings, items, storeLoading]);
 
-    if (loading) {
+    // Show loading skeleton if:
+    // 1. Still loading data
+    // 2. Have data but it's incomplete (missing price information)
+    const showSkeleton = loading || (data && (!data.price.high || !data.price.low));
+
+    if (showSkeleton) {
         return <ItemDetailsSkeleton />;
     }
 

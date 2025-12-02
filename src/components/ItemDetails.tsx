@@ -9,6 +9,7 @@ import { useFavoritesStore } from "@/stores/useFavoritesStore";
 import { useItemsStore } from "@/stores/useItemsStore";
 import { useState, useEffect } from "react";
 import { BUY_ICON, SELL_ICON } from "@/lib/constants/icons";
+import { getCurrencyClass } from "@/lib/currency";
 
 interface ItemDetailsProps {
     item: ItemMapping;
@@ -17,7 +18,7 @@ interface ItemDetailsProps {
 }
 
 export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
-    const isFavorite = useFavoritesStore(state => state.isFavorite);
+    const favorites = useFavoritesStore(state => state.favorites);
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
     const items = useItemsStore(state => state.items);
     const [copied, setCopied] = useState(false);
@@ -43,6 +44,12 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
 
     const formatNumber = (num: number | undefined) => (num ? num.toLocaleString() : "-");
 
+    const formatCurrency = (num: number | undefined) => {
+        if (num === undefined || num === null) return "-";
+        const coinClass = getCurrencyClass(num);
+        return <span className={coinClass}>{num.toLocaleString()}</span>;
+    };
+
     const timeAgo = (timestamp: number | undefined) => {
         if (!timestamp) return "-";
         const seconds = Math.floor(Date.now() / 1000 - timestamp);
@@ -66,7 +73,7 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
     };
 
     // Only check favorite state after hydration to prevent SSR mismatch
-    const favorite = isHydrated && isFavorite(item.id);
+    const favorite = isHydrated && favorites.has(item.id);
 
     return (
         <div className="max-w-[1200px] mx-auto">
@@ -130,7 +137,7 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
                         <div>
                             <h5 className="m-0 text-osrs-text-dark font-bold text-lg flex items-center gap-2">
                                 <img src={BUY_ICON} alt="Buy" className="w-5 h-5" />
-                                Buy price: <span className="text-osrs-text-dark">{formatNumber(currentPrice.high)}</span>
+                                Buy price: <span className="text-osrs-text-dark">{formatCurrency(currentPrice.high)}</span>
                             </h5>
                             <p className="text-sm text-osrs-text-muted mt-1">Last trade: <span className="text-osrs-text-muted">{timeAgo(currentPrice.highTime)}</span></p>
                         </div>
@@ -139,7 +146,7 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
                         <div>
                             <h5 className="m-0 text-osrs-text-dark font-bold text-lg flex items-center gap-2">
                                 <img src={SELL_ICON} alt="Sell" className="w-5 h-5" />
-                                Sell price: <span className="text-osrs-text-dark">{formatNumber(currentPrice.low)}</span>
+                                Sell price: <span className="text-osrs-text-dark">{formatCurrency(currentPrice.low)}</span>
                             </h5>
                             <p className="text-sm text-osrs-text-muted mt-1">Last trade: <span className="text-osrs-text-muted">{timeAgo(currentPrice.lowTime)}</span></p>
                         </div>
@@ -155,14 +162,14 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
                         </div>
                         <div>
                             <h5 className="m-0 text-osrs-text-dark font-bold text-lg">
-                                Margin: <span className={margin > 0 ? "text-osrs-profit" : "text-osrs-loss"}>
+                                Margin: <span className={`${margin > 0 ? "text-osrs-profit" : "text-osrs-loss"} ${getCurrencyClass(margin)}`}>
                                     {Math.round(margin).toLocaleString()}
                                 </span>
                             </h5>
                         </div>
                         <div>
                             <h6 className="m-0 text-osrs-text-dark font-bold text-lg">
-                                Potential profit: <span className={potentialProfit > 0 ? "text-osrs-profit" : "text-osrs-loss"}>
+                                Potential profit: <span className={`${potentialProfit > 0 ? "text-osrs-profit" : "text-osrs-loss"} ${getCurrencyClass(potentialProfit)}`}>
                                     {Math.round(potentialProfit).toLocaleString()}
                                 </span>
                             </h6>
@@ -185,15 +192,15 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
                                 <tr className="border-b border-osrs-border-light">
                                     <td className="p-2 font-bold text-osrs-text-dark">High Alch</td>
                                     <td className="p-2 font-bold text-osrs-text-dark text-right">
-                                        {formatNumber(item.highalch)}
+                                        {formatCurrency(item.highalch)}
                                         <span className={`ml-1 text-xs ${alchProfit > 0 ? "text-osrs-loss" : "text-osrs-loss"}`}>
-                                            ({formatNumber(alchProfit)})
+                                            ({formatCurrency(alchProfit)})
                                         </span>
                                     </td>
                                 </tr>
                                 <tr className="border-b border-osrs-border-light">
                                     <td className="p-2 font-bold text-osrs-text-dark">Low Alch</td>
-                                    <td className="p-2 font-bold text-osrs-text-dark text-right">{formatNumber(item.lowalch)}</td>
+                                    <td className="p-2 font-bold text-osrs-text-dark text-right">{formatCurrency(item.lowalch)}</td>
                                 </tr>
                                 <tr className="border-b border-osrs-border-light">
                                     <td className="p-2 font-bold text-osrs-text-dark">Members</td>

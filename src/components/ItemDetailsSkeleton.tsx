@@ -1,5 +1,6 @@
 import React from "react";
 import SkeletonLoader from "./SkeletonLoader";
+import { Heart, Copy } from "lucide-react";
 
 export default function ItemDetailsSkeleton() {
     return (
@@ -14,11 +15,32 @@ export default function ItemDetailsSkeleton() {
                     </div>
                 </div>
 
+                {/* Show actual static buttons instead of skeleton loaders */}
                 <div className="flex gap-2">
-                    <SkeletonLoader width={60} height={40} />
-                    <SkeletonLoader width={60} height={40} />
-                    <SkeletonLoader width={40} height={40} />
-                    <SkeletonLoader width={40} height={40} />
+                    <button
+                        disabled
+                        className="btn btn-secondary px-3 py-2 bg-osrs-secondary text-osrs-text-dark font-bold rounded border border-osrs-border-light opacity-50 cursor-not-allowed"
+                    >
+                        Wiki
+                    </button>
+                    <button
+                        disabled
+                        className="btn btn-secondary px-3 py-2 bg-osrs-secondary text-osrs-text-dark font-bold rounded border border-osrs-border-light opacity-50 cursor-not-allowed"
+                    >
+                        GEDB
+                    </button>
+                    <button
+                        disabled
+                        className="btn btn-secondary px-3 py-2 bg-osrs-secondary text-osrs-text-dark font-bold rounded border border-osrs-border-light opacity-50 cursor-not-allowed"
+                    >
+                        <Copy size={16} />
+                    </button>
+                    <button
+                        disabled
+                        className="btn btn-secondary px-3 py-2 bg-osrs-secondary font-bold rounded border border-osrs-border-light opacity-50 cursor-not-allowed"
+                    >
+                        <Heart size={16} className="text-osrs-text-dark" />
+                    </button>
                 </div>
             </div>
 

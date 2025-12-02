@@ -162,19 +162,17 @@ export default function ItemCharts({ itemId, latestPrice }: ItemChartsProps) {
 
     return (
         <div className="mt-8">
-            <div className="flex justify-center gap-2 mb-4">
-                {["1d", "7d", "30d", "1y"].map((range) => (
-                    <button
-                        key={range}
-                        className={`px-4 py-2 border border-osrs-border rounded cursor-pointer transition-colors ${timeRange === range
-                            ? "bg-osrs-accent text-white border-osrs-accent"
-                            : "bg-osrs-button text-black hover:bg-osrs-button-hover"
-                            }`}
-                        onClick={() => setTimeRange(range)}
-                    >
-                        {range === "1d" ? "1 Day" : range === "7d" ? "7 Days" : range === "30d" ? "30 Days" : "1 Year"}
-                    </button>
-                ))}
+            <div className="flex justify-end mb-4">
+                <select
+                    value={timeRange}
+                    onChange={(e) => setTimeRange(e.target.value)}
+                    className="px-4 py-2 bg-osrs-button text-black border border-osrs-border rounded cursor-pointer hover:bg-osrs-button-hover transition-colors font-bold"
+                >
+                    <option value="1d">1 Day</option>
+                    <option value="7d">7 Days</option>
+                    <option value="30d">30 Days</option>
+                    <option value="1y">1 Year</option>
+                </select>
             </div>
 
             <h3 className="m-0 mb-2 text-osrs-accent text-center font-header font-bold text-xl">Price History</h3>

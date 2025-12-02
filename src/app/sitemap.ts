@@ -19,12 +19,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
             priority: 1
         },
         {
-            url: `${baseUrl}/alchemy`,
+            url: `${baseUrl}/help`,
             lastModified: new Date(),
-            changeFrequency: 'daily',
-            priority: 0.9
+            changeFrequency: 'weekly',
+            priority: 0.7
         },
-        // Add other known static pages here
+        {
+            url: `${baseUrl}/changelog`,
+            lastModified: new Date(),
+            changeFrequency: 'weekly',
+            priority: 0.6
+        },
     ];
 
     // Dynamic item routes
