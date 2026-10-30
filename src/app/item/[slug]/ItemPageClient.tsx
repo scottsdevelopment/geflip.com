@@ -107,8 +107,8 @@ export default function ItemPageClient({ slug }: ItemPageClientProps) {
     }
 
     return (
-        <main>
+        <div>
             <ItemDetails item={data.mapping} price={data.price} volume={data.volume} />
-        </main>
+        </div>
     );
 }

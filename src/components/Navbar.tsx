@@ -30,7 +30,7 @@ export default function Navbar() {
 
     return (
         <>
-            <nav className="sticky top-0 z-50 bg-osrs-primary text-osrs-text-light h-14 flex items-center justify-between px-4 shadow-md border-b border-osrs-border">
+            <nav className="sticky top-0 z-50 bg-osrs-primary text-osrs-text-light h-14 flex items-center justify-between px-2 sm:px-4 shadow-md border-b border-osrs-border">
                 {/* Left Section: Logo */}
                 <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     <Link href="/" className="flex items-center gap-2 hover:text-white transition-colors">
@@ -57,10 +57,12 @@ export default function Navbar() {
                 </div>
 
                 {/* Center-Right Section: Navigation Buttons */}
-                <div className="flex items-center gap-2 shrink-0">
+                <div className="flex items-center gap-1 sm:gap-2 shrink-0">
                     {/* Mobile Search Toggle */}
                     <button
                         onClick={() => setIsMobileSearchOpen(!isMobileSearchOpen)}
+                        aria-label="Search items"
+                        aria-expanded={isMobileSearchOpen}
                         className="md:hidden p-2 rounded hover:bg-osrs-accent text-osrs-nav-inactive hover:text-osrs-text-light transition-colors"
                     >
                         <Search size={18} />
@@ -69,7 +71,8 @@ export default function Navbar() {
                     {/* All Items Button */}
                     <Link
                         href="/"
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded hover:bg-osrs-accent transition-colors ${pathname === "/" ? "text-osrs-text-light bg-osrs-accent shadow-inner" : "text-osrs-nav-inactive hover:text-osrs-text-light"}`}
+                        aria-label="All items"
+                        className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded hover:bg-osrs-accent transition-colors ${pathname === "/" ? "text-osrs-text-light bg-osrs-accent shadow-inner" : "text-osrs-nav-inactive hover:text-osrs-text-light"}`}
                     >
                         <Menu size={18} />
                         <span className="text-sm font-medium hidden sm:inline">All Items</span>
@@ -79,7 +82,9 @@ export default function Navbar() {
                     {/* Favourites Button */}
                     <button
                         onClick={() => handleToggleFilter("favorites_only")}
-                        className={`flex items-center gap-2 px-3 py-1.5 rounded hover:bg-osrs-accent transition-colors ${isFavoritesEnabled ? "text-osrs-text-light bg-osrs-accent shadow-inner" : "text-osrs-nav-inactive hover:text-osrs-text-light"}`}
+                        aria-label="Show favourites only"
+                        aria-pressed={isFavoritesEnabled}
+                        className={`flex items-center gap-2 px-2 sm:px-3 py-1.5 rounded hover:bg-osrs-accent transition-colors ${isFavoritesEnabled ? "text-osrs-text-light bg-osrs-accent shadow-inner" : "text-osrs-nav-inactive hover:text-osrs-text-light"}`}
                     >
                         <Heart size={18} className={isFavoritesEnabled ? "fill-current" : ""} />
                         <span className="text-sm font-medium hidden sm:inline">Favourites</span>
@@ -89,7 +94,9 @@ export default function Navbar() {
                     <div className="relative">
                         <button
                             onClick={() => setShowMoreDropdown(!showMoreDropdown)}
-                            className="flex items-center gap-2 px-3 py-1.5 rounded hover:bg-osrs-accent text-osrs-nav-inactive hover:text-osrs-text-light transition-colors"
+                            aria-expanded={showMoreDropdown}
+                            aria-haspopup="menu"
+                            className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3 py-1.5 rounded hover:bg-osrs-accent text-osrs-nav-inactive hover:text-osrs-text-light transition-colors"
                         >
                             <span className="text-sm font-medium">More</span>
                             <ChevronDown size={16} />
@@ -142,11 +149,12 @@ export default function Navbar() {
                 </div>
 
                 {/* Right Section: Refresh Controls */}
-                <div className="flex items-center gap-2">
-                    <div className="flex items-center gap-2 px-3">
+                <div className="flex items-center gap-1 sm:gap-2">
+                    <div className="flex items-center gap-2 px-1 sm:px-3">
                         <input
                             type="checkbox"
                             id="auto-refresh"
+                            aria-label="Auto-refresh prices every minute"
                             className="accent-osrs-accent"
                             checked={autoRefresh}
                             onChange={toggleAutoRefresh}
@@ -159,6 +167,7 @@ export default function Navbar() {
                     <button
                         className="p-2 rounded hover:bg-osrs-accent text-osrs-nav-inactive hover:text-osrs-text-light transition-colors"
                         title="Refresh"
+                        aria-label="Refresh prices now"
                         onClick={refreshData}
                         disabled={loading}
                     >

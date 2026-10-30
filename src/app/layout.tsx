@@ -1,6 +1,11 @@
 import type { Metadata, Viewport } from "next";
+import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+
+// Self-hosted via next/font: no render-blocking request to Google Fonts
+const inter = Inter({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-inter", display: "swap" });
+const cinzel = Cinzel({ subsets: ["latin"], weight: ["400", "700"], variable: "--font-cinzel", display: "swap" });
 
 export const viewport: Viewport = {
   width: "device-width",
@@ -11,7 +16,7 @@ export const viewport: Viewport = {
 export const metadata: Metadata = {
   metadataBase: new URL("https://geflip.com"),
   title: {
-    default: "GEFlip.com - #1 OSRS Grand Exchange Flipping & Price Checker 2025",
+    default: "GEFlip.com - OSRS Grand Exchange Flipping Finder & Price Checker",
     template: "%s | GEFlip.com",
   },
   description:
@@ -22,7 +27,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "https://geflip.com",
-    title: "GEFlip.com - #1 OSRS Grand Exchange Flipping & Price Checker 2025",
+    title: "GEFlip.com - OSRS Grand Exchange Flipping Finder & Price Checker",
     description:
       "Real-time OSRS GE prices, flipping margins, item database & profit calculator. Find the best Old School RuneScape flips with high volume and ROI.",
     siteName: "GE Flip",
@@ -38,8 +43,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    site: "@geflip", // Placeholder or keep generic if unknown
-    title: "GEFlip.com - #1 OSRS Grand Exchange Flipping & Price Checker 2025",
+    title: "GEFlip.com - OSRS Grand Exchange Flipping Finder & Price Checker",
     description:
       "Real-time OSRS GE prices, flipping margins, item database & profit calculator. Find the best Old School RuneScape flips with high volume and ROI.",
     images: ["/banner.png"],
@@ -47,7 +51,7 @@ export const metadata: Metadata = {
   icons: {
     icon: "/favicon.ico",
     shortcut: "/favicon.ico",
-    apple: "/favicon.ico", // Assuming favicon.ico exists as seen in file list (typo in original was favico.ico but file list said favicon.ico)
+    apple: "/icon.png",
   },
 };
 
@@ -57,24 +61,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${inter.variable} ${cinzel.variable}`}>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=Inter:wght@400;600&display=swap"
-          rel="stylesheet"
-        />
+        {/* Item icons are loaded from the wiki on every table page */}
+        <link rel="preconnect" href="https://oldschool.runescape.wiki" />
+        <link rel="preconnect" href="https://prices.runescape.wiki" crossOrigin="anonymous" />
       </head>
       <body>
         <Navbar />
-        <main className="p-8">
+        <main className="p-3 sm:p-8">
           {children}
         </main>
         <footer className="text-center p-4 text-osrs-text-muted text-sm">
-          <h1 className="text-sm font-bold mb-2">OSRS Flipping Tool & Price Checker</h1>
+          <p className="text-sm font-bold mb-2">OSRS Flipping Tool & Price Checker</p>
           <p>
-            Data provided by{" "}
+            Not affiliated with Jagex. Data provided by{" "}
             <a
               href="https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices"
               target="_blank"
