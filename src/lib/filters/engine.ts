@@ -3,8 +3,10 @@ import { ProcessedItem } from "../types";
 import { SavedFilter, FilterResult } from "./types";
 import { CustomColumn } from "../columns/types";
 import { evaluateColumn } from "../columns/engine";
+import { geTax } from "../geTax";
 
 const parser = new Parser();
+parser.functions.tax = (price: number) => geTax(Number(price));
 const expressionCache = new Map<string, any>();
 
 // Helper to safely evaluate filter expression

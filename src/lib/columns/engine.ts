@@ -1,10 +1,14 @@
 import { Parser } from "expr-eval";
 import { CustomColumn, ColumnContext } from "./types";
 import { TimeseriesCache } from "../timeseries/cache";
+import { geTax } from "../geTax";
 
 const parser = new Parser();
 // Cache parsed expressions to avoid re-parsing for every item
 const expressionCache = new Map<string, any>();
+
+// GE tax for a given sale price: tax(price)
+parser.functions.tax = (price: number) => geTax(Number(price));
 
 // Array utility functions for building custom indicators
 parser.functions.slice = (arr: any[], start: number, end?: number) => {

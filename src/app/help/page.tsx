@@ -205,6 +205,14 @@ export default function HelpPage() {
                                 <td className="p-2 border border-osrs-border">Access your custom columns. e.g. <code>columns.myProfitCol</code>.</td>
                             </tr>
                             <tr className="bg-osrs-input">
+                                <td className="p-2 border border-osrs-border font-mono">tax(price)</td>
+                                <td className="p-2 border border-osrs-border">
+                                    Grand Exchange tax for selling one item at <code>price</code>: 2%, rounded down, capped at 5,000,000 gp.
+                                    <br />
+                                    Example: <code>item.high - tax(item.high) - item.low</code>
+                                </td>
+                            </tr>
+                            <tr className="bg-osrs-input">
                                 <td className="p-2 border border-osrs-border font-mono">getItem(id | "name", "property")</td>
                                 <td className="p-2 border border-osrs-border">
                                     Lookup another item by ID or exact name.
@@ -262,25 +270,25 @@ export default function HelpPage() {
                                 <td className="p-2 border border-osrs-border font-bold">ROI %</td>
                                 <td className="p-2 border border-osrs-border font-mono text-xs">columns.roi</td>
                                 <td className="p-2 border border-osrs-border">Return on Investment percentage after tax</td>
-                                <td className="p-2 border border-osrs-border font-mono text-xs">(((item.high * 0.98) - item.low) / item.low)</td>
+                                <td className="p-2 border border-osrs-border font-mono text-xs">(((item.high - tax(item.high)) - item.low) / item.low)</td>
                             </tr>
                             <tr className="bg-osrs-input">
                                 <td className="p-2 border border-osrs-border font-bold">Margin</td>
                                 <td className="p-2 border border-osrs-border font-mono text-xs">columns.profit</td>
                                 <td className="p-2 border border-osrs-border">Potential profit per item after 2% GE tax</td>
-                                <td className="p-2 border border-osrs-border font-mono text-xs">round((item.high * 0.98) - item.low)</td>
+                                <td className="p-2 border border-osrs-border font-mono text-xs">round((item.high - tax(item.high)) - item.low)</td>
                             </tr>
                             <tr className="bg-osrs-input">
                                 <td className="p-2 border border-osrs-border font-bold">Potential Profit</td>
                                 <td className="p-2 border border-osrs-border font-mono text-xs">columns.potentialProfit</td>
                                 <td className="p-2 border border-osrs-border">Max potential profit per 4 hours (Limit * Margin)</td>
-                                <td className="p-2 border border-osrs-border font-mono text-xs">item.limit * round((item.high * 0.98) - item.low)</td>
+                                <td className="p-2 border border-osrs-border font-mono text-xs">item.limit * round((item.high - tax(item.high)) - item.low)</td>
                             </tr>
                             <tr className="bg-osrs-input">
                                 <td className="p-2 border border-osrs-border font-bold">Margin * Volume</td>
                                 <td className="p-2 border border-osrs-border font-mono text-xs">columns.marginVolume</td>
                                 <td className="p-2 border border-osrs-border">Potential daily profit (Volume * Margin)</td>
-                                <td className="p-2 border border-osrs-border font-mono text-xs">item.volume * round((item.high * 0.98) - item.low)</td>
+                                <td className="p-2 border border-osrs-border font-mono text-xs">item.volume * round((item.high - tax(item.high)) - item.low)</td>
                             </tr>
                             <tr className="bg-osrs-input">
                                 <td className="p-2 border border-osrs-border font-bold">Alch Margin</td>

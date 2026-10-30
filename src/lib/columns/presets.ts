@@ -56,7 +56,7 @@ export const PRESET_COLUMNS: CustomColumn[] = [
         format: "decimal",
         enabled: true,
         group: "Core",
-        description: "Current lowest price someone is selling for (instant buy)"
+        description: "Latest instant-sell price (what you can typically buy at with a low offer)"
     },
     {
         id: "lowTime",
@@ -76,7 +76,7 @@ export const PRESET_COLUMNS: CustomColumn[] = [
         format: "decimal",
         enabled: true,
         group: "Core",
-        description: "Current highest price someone is buying for (instant sell)"
+        description: "Latest instant-buy price (what you can typically sell at with a high offer)"
     },
     {
         id: "highTime",
@@ -91,22 +91,22 @@ export const PRESET_COLUMNS: CustomColumn[] = [
     {
         id: "roi",
         name: "ROI %",
-        expression: "(((item.high * 0.98) - item.low) / item.low)",
+        expression: "(((item.high - tax(item.high)) - item.low) / item.low)",
         type: "number",
         format: "percentage",
         enabled: true,
         group: "Profit",
-        description: "Return on Investment percentage after tax"
+        description: "Return on Investment percentage after GE tax (2%, capped at 5m)"
     },
     {
         id: "profit",
         name: "Margin",
-        expression: "round((item.high * 0.98) - item.low)",
+        expression: "round((item.high - tax(item.high)) - item.low)",
         type: "number",
         format: "currency",
         enabled: true,
         group: "Profit",
-        description: "Potential profit per item after 2% GE tax"
+        description: "Potential profit per item after GE tax (2%, capped at 5m)"
     },
     {
         id: "volume",
@@ -121,7 +121,7 @@ export const PRESET_COLUMNS: CustomColumn[] = [
     {
         id: "potentialProfit",
         name: "Potential Profit",
-        expression: "item.limit * round((item.high * 0.98) - item.low)",
+        expression: "item.limit * round((item.high - tax(item.high)) - item.low)",
         type: "number",
         format: "currency",
         enabled: true,
@@ -131,7 +131,7 @@ export const PRESET_COLUMNS: CustomColumn[] = [
     {
         id: "marginVolume",
         name: "Margin * Volume",
-        expression: "item.volume * round((item.high * 0.98) - item.low)",
+        expression: "item.volume * round((item.high - tax(item.high)) - item.low)",
         type: "number",
         format: "currency",
         enabled: true,
