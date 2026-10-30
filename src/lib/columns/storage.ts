@@ -1,6 +1,7 @@
 import { storage, STORAGE_KEYS } from "../persistence/storage";
 import { CustomColumn } from "./types";
 import { PRESET_COLUMNS } from "./presets";
+import { findColumnReferences } from "./engine";
 import { loadFilters } from "../filters/storage";
 
 // Previous default expressions of preset columns, used to upgrade stored copies.
@@ -73,10 +74,11 @@ export async function updateColumn(id: string, updates: Partial<CustomColumn>): 
 
 export async function deleteColumn(id: string): Promise<CustomColumn[]> {
     // Check dependencies first
-    // Check dependencies first
+    const refersTo = (code: string | undefined) => !!code && findColumnReferences(code).includes(id);
+
     const filters = await loadFilters();
     const dependentFilters = filters.filter(f =>
-        f.expressions.some(expr => expr.code.includes(`columns.${id}`) || expr.highlightItem?.includes(`columns.${id}`))
+        (f.expressions || []).some(expr => refersTo(expr.code) || refersTo(expr.highlightItem))
     );
 
     if (dependentFilters.length > 0) {
@@ -84,6 +86,11 @@ export async function deleteColumn(id: string): Promise<CustomColumn[]> {
     }
 
     const columns = await loadColumns();
+    const dependentColumns = columns.filter(c => c.id !== id && refersTo(c.expression));
+    if (dependentColumns.length > 0) {
+        throw new Error(`Cannot delete column. It is used by columns: ${dependentColumns.map(c => c.name).join(", ")}`);
+    }
+
     const newColumns = columns.filter(col => col.id !== id); // Allow deleting anything
     await saveColumns(newColumns);
     return newColumns;

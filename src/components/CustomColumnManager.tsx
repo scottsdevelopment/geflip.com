@@ -44,9 +44,20 @@ export default function CustomColumnManager() {
         setGroup(col.group || "Custom");
     };
 
-    const handleDelete = async (id: string) => {
+    const resetForm = () => {
+        setEditingColumn(undefined);
+        setName("");
+        setExpression("");
+        setType("number");
+        setFormat("currency");
+        setGroup("Custom");
+    };
+
+    const handleDelete = async (col: CustomColumn) => {
+        if (!window.confirm(`Delete the "${col.name}" column?`)) return;
         try {
-            await handleDeleteColumn(id);
+            await handleDeleteColumn(col.id);
+            if (editingColumn?.id === col.id) resetForm();
         } catch (error) {
             alert(error instanceof Error ? error.message : "Failed to delete column");
         }
@@ -55,22 +66,17 @@ export default function CustomColumnManager() {
     const handleSave = (col: CustomColumn) => {
         if (editingColumn) {
             handleUpdateColumn(col);
-            setEditingColumn(undefined);
         } else {
             handleAddColumn(col);
         }
-        // Reset form
-        setName("");
-        setExpression("");
-        setType("number");
-        setFormat("currency");
-        setGroup("Custom");
+        resetForm();
     };
 
     return (
         <div className="mb-4 bg-osrs-panel border-2 border-osrs-border rounded-lg overflow-hidden shadow-lg">
             <button
                 onClick={() => togglePanel('columns')}
+                aria-expanded={isExpanded}
                 className="w-full px-4 py-3 bg-osrs-button text-osrs-text-dark font-header font-bold flex items-center justify-between hover:bg-osrs-button-hover transition-colors"
             >
                 <div className="flex items-center gap-2">
@@ -92,9 +98,20 @@ export default function CustomColumnManager() {
                     {/* 33/66 Split Layout */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         {/* Left Column: Column Builder (33%) */}
-                        <div className="lg:col-span-1 border-r border-osrs-border pr-6">
-                            <div className="flex items-center justify-between pb-3 border-b border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text">Create Column</h3>
+                        <div className="lg:col-span-1 lg:border-r border-osrs-border lg:pr-6">
+                            <div className="flex items-center justify-between gap-2 pb-3 border-b border-osrs-border mb-4">
+                                <h3 className="font-header font-bold text-osrs-text truncate">
+                                    {editingColumn ? `Edit: ${editingColumn.name}` : "Create Column"}
+                                </h3>
+                                {editingColumn && (
+                                    <button
+                                        type="button"
+                                        onClick={resetForm}
+                                        className="text-sm text-osrs-text underline hover:text-osrs-accent shrink-0"
+                                    >
+                                        Cancel edit
+                                    </button>
+                                )}
                             </div>
 
                             <ColumnBuilder
@@ -145,21 +162,24 @@ export default function CustomColumnManager() {
                                                         onChange={() => handleToggleColumn(col.id)}
                                                         className="w-4 h-4 cursor-pointer accent-osrs-accent"
                                                     />
-                                                    <span title={col.description}>{col.name}</span>
+                                                    <span title={col.description} className="truncate">{col.name}</span>
                                                 </label>
 
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {/* Always visible on touch screens; revealed on hover/focus on desktop */}
+                                                <div className="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => handleEdit(col)}
-                                                        className="p-1 text-gray-500 hover:text-osrs-accent"
+                                                        className="p-1 text-gray-600 hover:text-osrs-accent"
                                                         title="Edit"
+                                                        aria-label={`Edit ${col.name} column`}
                                                     >
                                                         <Edit2 className="w-3 h-3" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDelete(col.id)}
-                                                        className="p-1 text-gray-500 hover:text-red-600"
+                                                        onClick={() => handleDelete(col)}
+                                                        className="p-1 text-gray-600 hover:text-red-600"
                                                         title="Delete"
+                                                        aria-label={`Delete ${col.name} column`}
                                                     >
                                                         <Trash2 className="w-3 h-3" />
                                                     </button>

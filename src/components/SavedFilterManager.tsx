@@ -318,18 +318,23 @@ export default function SavedFilterManager({
                                                     <span title={filter.description}>{filter.name}</span>
                                                 </label>
 
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {/* Always visible on touch screens; revealed on hover/focus on desktop */}
+                                                <div className="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => handleEdit(filter)}
-                                                        className="p-1 text-gray-500 hover:text-osrs-accent"
+                                                        className="p-1 text-gray-600 hover:text-osrs-accent"
                                                         title="Edit"
+                                                        aria-label={`Edit ${filter.name} filter`}
                                                     >
                                                         <Edit2 className="w-3 h-3" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteFilter(filter.id)}
-                                                        className="p-1 text-gray-500 hover:text-red-600"
+                                                        onClick={() => {
+                                                            if (window.confirm(`Delete the "${filter.name}" filter?`)) handleDeleteFilter(filter.id);
+                                                        }}
+                                                        className="p-1 text-gray-600 hover:text-red-600"
                                                         title="Delete"
+                                                        aria-label={`Delete ${filter.name} filter`}
                                                     >
                                                         <Trash2 className="w-3 h-3" />
                                                     </button>

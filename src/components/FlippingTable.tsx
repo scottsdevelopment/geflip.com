@@ -278,6 +278,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                                 handleColumnReorder(draggedId, col.id);
                                             }}
                                             onClick={() => handleSort(col.id)}
+                                            aria-sort={sortKey === col.id ? (sortDirection === "asc" ? "ascending" : "descending") : undefined}
                                             colSpan={col.id === "name" ? 2 : 1}
                                             className={`sticky left-0 top-0 z-20 p-3 h-12 bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm text-center ${sortKey === col.id ? "bg-osrs-button-hover" : ""}`}
                                         >
@@ -292,7 +293,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                                     {col.id === "favorite" ? (
                                                         <Heart size={16} className="text-osrs-primary fill-current" />
                                                     ) : (
-                                                        <span>{col.name}</span>
+                                                        <span className="inline-block max-w-[12rem] truncate align-bottom">{col.name}</span>
                                                     )}
                                                     <SortIcon columnId={col.id} />
                                                 </div>

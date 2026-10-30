@@ -43,7 +43,7 @@ export function evaluateFilter(
             if (typeof prop === "string") {
                 const col = customColumns.find(c => c.id === prop);
                 if (col) {
-                    return evaluateColumn(col, { item }, customColumns);
+                    return evaluateColumn(col, { item }, customColumns, undefined, undefined, 0, allItems);
                 }
             }
             return undefined;
