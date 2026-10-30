@@ -235,9 +235,8 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
     if (prevProps.action !== nextProps.action) return false;
     if (prevProps.showActionColumn !== nextProps.showActionColumn) return false;
 
-    const prevEnabled = prevProps.columns.filter(c => c.enabled).map(c => c.id).join(",");
-    const nextEnabled = nextProps.columns.filter(c => c.enabled).map(c => c.id).join(",");
-    if (prevEnabled !== nextEnabled) return false;
+    // Any column change (expression, format, name, order, visibility) must re-render the row
+    if (prevProps.columns !== nextProps.columns) return false;
 
     if (prevProps.item !== nextProps.item) return false;
     if (prevProps.cache !== nextProps.cache) return false;
