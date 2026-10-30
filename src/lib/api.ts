@@ -15,17 +15,58 @@ const API_TIMESERIES = `${API_BASE}/timeseries`;
 let cachedMappings: ItemMapping[] | null = null;
 let mappingsFetchPromise: Promise<ItemMapping[]> | null = null;
 
+const IS_SERVER = typeof window === "undefined";
+
+// The Wiki prices API rejects requests without a descriptive User-Agent (HTTP 403),
+// which breaks the static build. Browsers don't allow setting User-Agent, so only
+// send it from the server/build side.
+// See https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices#Please_set_a_descriptive_User-Agent!
+const SERVER_HEADERS: HeadersInit = {
+    "User-Agent": "geflip.com - OSRS flipping tools (https://github.com/scottsdevelopment/geflip.com)",
+};
+
+async function apiFetchJson<T>(url: string, revalidate: number): Promise<T> {
+    const res = await fetch(url, {
+        headers: IS_SERVER ? SERVER_HEADERS : undefined,
+        next: { revalidate },
+    });
+    if (!res.ok) {
+        throw new Error(`Request to ${url} failed with status ${res.status}`);
+    }
+    return (await res.json()) as T;
+}
+
+// Short-lived in-memory cache so slow-moving endpoints aren't re-downloaded on every
+// refresh (and so the static build fetches bulk endpoints once per worker instead of per page).
+const jsonCache = new Map<string, { expires: number; promise: Promise<unknown> }>();
+
+function cachedFetchJson<T>(url: string, ttlSeconds: number): Promise<T> {
+    const now = Date.now();
+    const hit = jsonCache.get(url);
+    if (hit && hit.expires > now) return hit.promise as Promise<T>;
+
+    const promise = apiFetchJson<T>(url, ttlSeconds);
+    jsonCache.set(url, { expires: now + ttlSeconds * 1000, promise });
+    // Don't keep failed requests cached
+    promise.catch(() => jsonCache.delete(url));
+    return promise;
+}
+
+type DataResponse<T> = { data: Record<string, T> };
+
 export async function fetchItemData(id: number): Promise<{ mapping: ItemMapping; price: PriceData; volume: number } | null> {
     try {
-        const [mappingRes, latestRes, volumesRes] = await Promise.all([
-            fetch(API_MAPPING, { next: { revalidate: 3600 } }),
-            fetch(`${API_LATEST}?id=${id}`, { next: { revalidate: 60 } }),
-            fetch(API_VOLUMES, { next: { revalidate: 3600 } }),
+        // On the server (static build) fetch the bulk /latest once and reuse it for every item page,
+        // instead of one request per item. In the browser, ask for just this item.
+        const latestUrl = IS_SERVER ? API_LATEST : `${API_LATEST}?id=${id}`;
+        const [mapping, latestRes, volumesRes] = await Promise.all([
+            fetchAllMappings(),
+            cachedFetchJson<DataResponse<PriceData>>(latestUrl, IS_SERVER ? 3600 : 60),
+            cachedFetchJson<DataResponse<number>>(API_VOLUMES, 1800),
         ]);
 
-        const mapping = (await mappingRes.json()) as ItemMapping[];
-        const latest = (await latestRes.json()).data as Record<string, PriceData>;
-        const volumes = (await volumesRes.json()).data as Record<string, number>;
+        const latest = latestRes.data;
+        const volumes = volumesRes.data;
 
         const itemMapping = mapping.find((i) => i.id === id);
         const itemPrice = latest[id];
@@ -58,12 +99,12 @@ export async function fetchAllMappings(): Promise<ItemMapping[]> {
     // Start new fetch
     mappingsFetchPromise = (async () => {
         try {
-            const res = await fetch(API_MAPPING, { next: { revalidate: 3600 } });
-            const data = (await res.json()) as ItemMapping[];
+            const data = await apiFetchJson<ItemMapping[]>(API_MAPPING, 3600);
             cachedMappings = data;
             return data;
         } catch (err) {
             console.error("Error fetching mappings:", err);
+            if (IS_SERVER) throw err; // fail the static build loudly rather than exporting no item pages
             return [];
         } finally {
             mappingsFetchPromise = null;
@@ -75,17 +116,13 @@ export async function fetchAllMappings(): Promise<ItemMapping[]> {
 
 export async function fetchItemDataBySlug(slug: string): Promise<{ mapping: ItemMapping; price: PriceData; volume: number } | null> {
     try {
-        console.log(`Fetching item data for slug: ${slug}`);
         // 1. Fetch all mappings to find the ID from the slug
         const mappings = await fetchAllMappings();
         const item = findItemBySlugOrId(slug, mappings);
 
         if (!item) {
-            console.log(`Item not found for slug: ${slug}`);
             return null;
         }
-
-        console.log(`Found item for slug ${slug}: ${item.name} (ID: ${item.id})`);
 
         // 2. Once we have the ID, fetch the specific data
         // We can reuse fetchItemData since we now have the ID
@@ -98,10 +135,7 @@ export async function fetchItemDataBySlug(slug: string): Promise<{ mapping: Item
 
 export async function fetchTimeSeries(id: number, timestep: string): Promise<TimeSeriesData[]> {
     try {
-        const res = await fetch(`${API_TIMESERIES}?timestep=${timestep}&id=${id}`, {
-            next: { revalidate: 300 },
-        });
-        const json = await res.json();
+        const json = await apiFetchJson<{ data?: TimeSeriesData[] }>(`${API_TIMESERIES}?timestep=${timestep}&id=${id}`, 300);
         return json.data || [];
     } catch (err) {
         console.error("Error fetching time series:", err);
@@ -111,21 +145,23 @@ export async function fetchTimeSeries(id: number, timestep: string): Promise<Tim
 
 export async function fetchFlippingData(): Promise<{ items: ProcessedItem[] }> {
     try {
+        // /latest changes every minute; the averaged endpoints only update every 5 minutes / hour,
+        // so cache those to avoid re-downloading several MB on every 60s refresh.
         const [latestRes, fiveMRes, oneHRes, sixHRes, twentyFourHRes, volumesRes] = await Promise.all([
-            fetch(API_LATEST, { next: { revalidate: 60 } }),
-            fetch(API_5M, { next: { revalidate: 300 } }),
-            fetch(API_1H, { next: { revalidate: 300 } }),
-            fetch(API_6H, { next: { revalidate: 3600 } }),
-            fetch(API_24H, { next: { revalidate: 3600 } }),
-            fetch(API_VOLUMES, { next: { revalidate: 3600 } }),
+            apiFetchJson<DataResponse<PriceData>>(API_LATEST, 60),
+            cachedFetchJson<DataResponse<TimeSeriesData>>(API_5M, 240),
+            cachedFetchJson<DataResponse<TimeSeriesData>>(API_1H, 600),
+            cachedFetchJson<DataResponse<TimeSeriesData>>(API_6H, 1800),
+            cachedFetchJson<DataResponse<TimeSeriesData>>(API_24H, 1800),
+            cachedFetchJson<DataResponse<number>>(API_VOLUMES, 1800),
         ]);
 
-        const latest = (await latestRes.json()).data as Record<string, PriceData>;
-        const fiveM = (await fiveMRes.json()).data as Record<string, TimeSeriesData>;
-        const oneH = (await oneHRes.json()).data as Record<string, TimeSeriesData>;
-        const sixH = (await sixHRes.json()).data as Record<string, TimeSeriesData>;
-        const twentyFourH = (await twentyFourHRes.json()).data as Record<string, TimeSeriesData>;
-        const volumes = (await volumesRes.json()).data as Record<string, number>;
+        const latest = latestRes.data;
+        const fiveM = fiveMRes.data;
+        const oneH = oneHRes.data;
+        const sixH = sixHRes.data;
+        const twentyFourH = twentyFourHRes.data;
+        const volumes = volumesRes.data;
 
         // Get mappings (cached at module level)
         const mapping = await fetchAllMappings();
@@ -199,7 +235,8 @@ export async function fetchFlippingData(): Promise<{ items: ProcessedItem[] }> {
         return { items: results };
     } catch (err) {
         console.error("Error fetching flipping data:", err);
-        return { items: [] };
+        // Rethrow so callers can keep showing the previous data instead of an empty table
+        throw err;
     }
 }
 
@@ -216,8 +253,7 @@ export async function fetchTimeseriesForSMA(ids: number[], timestep: "24h" = "24
         const batch = ids.slice(i, i + BATCH_SIZE);
         try {
             const promises = batch.map(id =>
-                fetch(`${API_TIMESERIES}?timestep=${timestep}&id=${id}`, { next: { revalidate: 3600 } })
-                    .then(res => res.json())
+                apiFetchJson<{ data?: TimeSeriesData[] }>(`${API_TIMESERIES}?timestep=${timestep}&id=${id}`, 3600)
                     .then(json => ({ id, data: json.data }))
                     .catch(err => {
                         console.error(`Error fetching timeseries for ${id}:`, err);
