@@ -337,7 +337,7 @@ export function parseAdvancedFilter(code: string): { conditions: SimpleCondition
 
             // Parse value
             let value: any = valueStr;
-            let valueType = field.valueType;
+            const valueType = field.valueType;
 
             // Remove quotes for strings
             if (valueType === 'string' && (value.startsWith('"') || value.startsWith("'"))) {

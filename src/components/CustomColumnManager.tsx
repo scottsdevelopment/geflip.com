@@ -100,9 +100,9 @@ export default function CustomColumnManager() {
                         {/* Left Column: Column Builder (33%) */}
                         <div className="lg:col-span-1 lg:border-r border-osrs-border lg:pr-6">
                             <div className="flex items-center justify-between gap-2 pb-3 border-b border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text truncate">
+                                <h2 className="font-header font-bold text-osrs-text truncate">
                                     {editingColumn ? `Edit: ${editingColumn.name}` : "Create Column"}
-                                </h3>
+                                </h2>
                                 {editingColumn && (
                                     <button
                                         type="button"
@@ -137,7 +137,7 @@ export default function CustomColumnManager() {
                         {/* Right Column: Column List (66%) */}
                         <div className="lg:col-span-2">
                             <div className="flex justify-between items-center pb-4 border-b-2 border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text">Toggle Columns</h3>
+                                <h2 className="font-header font-bold text-osrs-text">Toggle Columns</h2>
                                 <div className="text-sm text-osrs-text">
                                     {columns.filter((c) => c.enabled).length} active
                                 </div>
@@ -147,9 +147,9 @@ export default function CustomColumnManager() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[500px] overflow-y-auto pr-2">
                                 {Object.entries(groupedColumns).map(([groupName, groupColumns]) => (
                                     <div key={groupName} className="space-y-2">
-                                        <h4 className="text-sm font-header font-bold text-osrs-text border-b border-osrs-border pb-1">
+                                        <h3 className="text-sm font-header font-bold text-osrs-text border-b border-osrs-border pb-1">
                                             {groupName}
-                                        </h4>
+                                        </h3>
                                         {groupColumns.map((col) => (
                                             <div
                                                 key={col.id}

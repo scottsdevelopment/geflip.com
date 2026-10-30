@@ -216,7 +216,7 @@ export default function SavedFilterManager({
                         <div className="lg:col-span-1 border-r border-osrs-border pr-6">
                             {/* Mode Toggle */}
                             <div className="flex items-center justify-between pb-3 border-b border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text">Create Filter</h3>
+                                <h2 className="font-header font-bold text-osrs-text">Create Filter</h2>
                                 <button
                                     onClick={handleToggleMode}
                                     className="flex items-center gap-1 px-2 py-1 text-xs font-bold bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
@@ -290,7 +290,7 @@ export default function SavedFilterManager({
                         {/* Right Column: Filter List (66%) */}
                         <div className="lg:col-span-2">
                             <div className="flex justify-between items-center pb-4 border-b-2 border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text">Apply Filters</h3>
+                                <h2 className="font-header font-bold text-osrs-text">Apply Filters</h2>
                                 <div className="text-sm text-osrs-text">
                                     {filters.filter((f) => f.enabled).length} active
                                 </div>
@@ -300,9 +300,9 @@ export default function SavedFilterManager({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[500px] overflow-y-auto pr-2">
                                 {Object.entries(groupedFilters).map(([groupName, groupFilters]) => (
                                     <div key={groupName} className="space-y-2">
-                                        <h4 className="text-sm font-header font-bold text-osrs-text border-b border-osrs-border pb-1">
+                                        <h3 className="text-sm font-header font-bold text-osrs-text border-b border-osrs-border pb-1">
                                             {groupName}
-                                        </h4>
+                                        </h3>
                                         {groupFilters.map((filter) => (
                                             <div
                                                 key={filter.id}

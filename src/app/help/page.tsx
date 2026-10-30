@@ -31,7 +31,7 @@ export default function HelpPage() {
                         <h3 className="text-xl font-bold text-osrs-text-dark mb-2">Filters</h3>
                         <p className="mb-2">
                             Filters allow you to narrow down the list of items based on specific criteria.
-                            You can create complex logic to find exactly what you're looking for.
+                            You can create complex logic to find exactly what you&apos;re looking for.
                         </p>
                     </div>
                     <div>
@@ -48,14 +48,14 @@ export default function HelpPage() {
             <section className="mb-8">
                 <h2 className="text-2xl font-bold text-osrs-accent mb-4">Presets vs. Custom Filters</h2>
                 <p className="mb-4">
-                    <strong>Presets</strong> are simple, pre-configured toggles that we've set up for common use cases.
+                    <strong>Presets</strong> are simple, pre-configured toggles that we&apos;ve set up for common use cases.
                     They are a great way to get started.
                 </p>
                 <div className="bg-osrs-input border-l-4 border-osrs-accent p-4 mb-4 text-osrs-text">
                     <p className="font-bold text-osrs-text-dark">Community Filters & Common Columns</p>
                     <p>
                         We have also included a selection of <strong>Community Filters</strong> and <strong>Common Columns</strong>.
-                        These are more advanced than basic presets and showcase what's possible with the custom engine.
+                        These are more advanced than basic presets and showcase what&apos;s possible with the custom engine.
                         Feel free to enable them and then <strong>edit them</strong> to see how they work!
                     </p>
                 </div>
@@ -75,7 +75,7 @@ export default function HelpPage() {
                         You can select properties, operators, and values from dropdowns.
                     </p>
                     <p className="text-sm text-gray-600">
-                        As you build your filter, you'll see <strong>live results</strong> showing how many items match your criteria.
+                        As you build your filter, you&apos;ll see <strong>live results</strong> showing how many items match your criteria.
                         The table will also update to show which items are currently selected by your active filters.
                     </p>
                 </div>
@@ -91,8 +91,8 @@ export default function HelpPage() {
                         <h4 className="font-bold text-osrs-text-dark mb-2">Action Label</h4>
                         <p className="mb-2 text-sm">
                             When creating a filter expression, you can optionally set an <strong>Action</strong>.
-                            This is a short text label (e.g., "Flip", "Alch", "Hold") that will appear in the "Action" column for items that match that specific expression.
-                            This is useful when you have a single filter with multiple "OR" expressions and want to know <em>which</em> part of the filter matched.
+                            This is a short text label (e.g., &quot;Flip&quot;, &quot;Alch&quot;, &quot;Hold&quot;) that will appear in the &quot;Action&quot; column for items that match that specific expression.
+                            This is useful when you have a single filter with multiple &quot;OR&quot; expressions and want to know <em>which</em> part of the filter matched.
                         </p>
                     </div>
 
@@ -103,8 +103,8 @@ export default function HelpPage() {
                             instead of the one that matched the filter.
                         </p>
                         <p className="text-sm text-gray-600 italic">
-                            Example: If you are filtering for "Black masks (10) that are profitable to decharge", you might match on the "Black mask (10)" item (which you buy),
-                            but you want the table to show the "Black mask" (which you sell) as the result.
+                            Example: If you are filtering for &quot;Black masks (10) that are profitable to decharge&quot;, you might match on the &quot;Black mask (10)&quot; item (which you buy),
+                            but you want the table to show the &quot;Black mask&quot; (which you sell) as the result.
                         </p>
                     </div>
                     {/* Examples */}
@@ -114,15 +114,15 @@ export default function HelpPage() {
                         <div className="bg-osrs-input p-4 rounded border border-osrs-border mb-4">
                             <h4 className="text-lg font-bold text-osrs-text-dark mb-2">Scenario: Crafting - Stringing Amulets</h4>
                             <p className="mb-2">
-                                Let's check if it's profitable to buy unstrung gold amulets and balls of wool, string them, and sell the strung amulets.
+                                Let&apos;s check if it&apos;s profitable to buy unstrung gold amulets and balls of wool, string them, and sell the strung amulets.
                             </p>
                             <p className="mb-2 font-bold text-sm text-gray-600">Expression:</p>
                             <code className="block bg-black/10 p-2 rounded font-mono text-sm mb-2">
-                                (getItem("Gold amulet", "low") - (getItem("Gold amulet (u)", "high") + getItem("Ball of wool", "high"))) {">"} 0
+                                (getItem(&quot;Gold amulet&quot;, &quot;low&quot;) - (getItem(&quot;Gold amulet (u)&quot;, &quot;high&quot;) + getItem(&quot;Ball of wool&quot;, &quot;high&quot;))) {">"} 0
                             </code>
                             <p className="text-sm">
                                 This calculates: <code>Sell Price of Strung</code> - (<code>Buy Price of Unstrung</code> + <code>Buy Price of Wool</code>).
-                                If the result is greater than 0, it's profitable (ignoring tax/time for this simple example).
+                                If the result is greater than 0, it&apos;s profitable (ignoring tax/time for this simple example).
                             </p>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ export default function HelpPage() {
             <section className="mb-8">
                 <h2 className="text-2xl font-bold text-osrs-accent mb-4">Creating Custom Columns</h2>
                 <p className="mb-4">
-                    Custom columns allow you to calculate and display any metric you want. Here's how to create one:
+                    Custom columns allow you to calculate and display any metric you want. Here&apos;s how to create one:
                 </p>
 
                 <div className="bg-osrs-input p-4 rounded border border-osrs-border mb-4">
@@ -164,7 +164,7 @@ export default function HelpPage() {
                         <div>
                             <p className="font-bold mb-1">Format (for Number type)</p>
                             <ul className="list-disc list-inside ml-2">
-                                <li><strong>Currency</strong>: Displays as GP (e.g., "1.2M")</li>
+                                <li><strong>Currency</strong>: Displays as GP (e.g., &quot;1.2M&quot;)</li>
                                 <li><strong>Percentage</strong>: Displays with % symbol</li>
                                 <li><strong>Decimal</strong>: Plain number with commas</li>
                             </ul>
@@ -213,13 +213,13 @@ export default function HelpPage() {
                                 </td>
                             </tr>
                             <tr className="bg-osrs-input">
-                                <td className="p-2 border border-osrs-border font-mono">getItem(id | "name", "property")</td>
+                                <td className="p-2 border border-osrs-border font-mono">getItem(id | &quot;name&quot;, &quot;property&quot;)</td>
                                 <td className="p-2 border border-osrs-border">
                                     Lookup another item by ID or exact name.
                                     <br />
                                     <strong>Important:</strong> You must provide the property name as the second argument to get a value.
                                     <br />
-                                    Example: <code>getItem("Nature rune", "low")</code>
+                                    Example: <code>getItem(&quot;Nature rune&quot;, &quot;low&quot;)</code>
                                 </td>
                             </tr>
                         </tbody>

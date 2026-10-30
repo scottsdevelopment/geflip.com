@@ -272,6 +272,7 @@ export default function SimpleFilterBuilder({
                         Category
                     </label>
                     <select
+                        aria-label="Filter category"
                         value={category}
                         onChange={(e) => setCategory(e.target.value)}
                         className="w-full h-[42px] px-2 border border-osrs-border rounded bg-osrs-input text-sm focus:outline-none focus:border-osrs-accent"
@@ -317,6 +318,7 @@ export default function SimpleFilterBuilder({
                                             Field
                                         </label>
                                         <select
+                                            aria-label={`Condition ${index + 1} field`}
                                             value={condition.field}
                                             onChange={(e) => handleFieldChange(index, e.target.value)}
                                             className="w-full h-[42px] p-2 border border-osrs-border rounded bg-osrs-input text-sm focus:outline-none focus:border-osrs-accent"
@@ -340,6 +342,7 @@ export default function SimpleFilterBuilder({
                                             Op
                                         </label>
                                         <select
+                                            aria-label={`Condition ${index + 1} operator`}
                                             value={condition.operator}
                                             onChange={(e) => handleOperatorChange(index, e.target.value)}
                                             className="w-full h-[42px] p-2 border border-osrs-border rounded bg-osrs-input text-sm focus:outline-none focus:border-osrs-accent"
@@ -360,6 +363,7 @@ export default function SimpleFilterBuilder({
                                         </label>
                                         {condition.valueType === "boolean" ? (
                                             <select
+                                                aria-label={`Condition ${index + 1} value`}
                                                 value={condition.value.toString()}
                                                 onChange={(e) =>
                                                     handleBooleanChange(index, e.target.value === "true")

@@ -72,7 +72,7 @@ export default function RootLayout({
         <main className="p-3 sm:p-8">
           {children}
         </main>
-        <footer className="text-center p-4 text-osrs-text-muted text-sm">
+        <footer className="text-center p-4 text-osrs-text-dark text-sm">
           <p className="text-sm font-bold mb-2">OSRS Flipping Tool & Price Checker</p>
           <p>
             Not affiliated with Jagex. Data provided by{" "}
@@ -80,7 +80,7 @@ export default function RootLayout({
               href="https://oldschool.runescape.wiki/w/RuneScape:Real-time_Prices"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-osrs-accent hover:underline"
+              className="text-osrs-primary underline hover:text-osrs-primary-hover"
             >
               RuneScape Wiki
             </a>
@@ -91,7 +91,7 @@ export default function RootLayout({
               href="https://ko-fi.com/scottsdevelopment"
               target="_blank"
               rel="noopener noreferrer"
-              className="text-osrs-accent hover:underline"
+              className="text-osrs-primary underline hover:text-osrs-primary-hover"
             >
               Ko-fi
             </a>

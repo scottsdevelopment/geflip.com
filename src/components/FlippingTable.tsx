@@ -320,7 +320,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                         ) : searchQuery ? (
                                             <div>
                                                 <p className="text-lg font-bold mb-2">No items found</p>
-                                                <p className="text-sm opacity-75">No items match "{searchQuery}"</p>
+                                                <p className="text-sm opacity-75">No items match &quot;{searchQuery}&quot;</p>
                                             </div>
                                         ) : (
                                             <div>
