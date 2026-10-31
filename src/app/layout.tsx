@@ -2,6 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Cinzel, Inter } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
+import { GoogleAnalytics } from "@next/third-parties/google";
+
+// GA4 measurement IDs are public; env var allows overriding per deploy.
+const GA_ID = process.env.NEXT_PUBLIC_GA_ID ?? "G-3M1YST4TLL";
 
 // Self-hosted via next/font: no render-blocking request to Google Fonts
 const inter = Inter({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-inter", display: "swap" });
@@ -98,6 +102,7 @@ export default function RootLayout({
           </p>
         </footer>
       </body>
+      {GA_ID && <GoogleAnalytics gaId={GA_ID} />}
     </html>
   );
 }
