@@ -1,9 +1,11 @@
-import { Parser } from "expr-eval";
+import { Parser } from "expr-eval-fork";
 import { CustomColumn, ColumnContext } from "./types";
 import { TimeseriesCache } from "../timeseries/cache";
 import { geTax } from "../geTax";
+import { registerScopedFunctions, withScope } from "../expressionScope";
 
 const parser = new Parser();
+registerScopedFunctions(parser);
 // Cache parsed expressions to avoid re-parsing for every item.
 // Expressions that fail to parse are cached as PARSE_FAILED so a bad column
 // doesn't re-parse (and log) once per cell on every render.
@@ -107,16 +109,17 @@ export function evaluateColumn(
             return found;
         };
 
-        // Extend context with columns proxy and timeseries function
+        // Extend context with columns proxy; getItem/timeseries are scoped parser functions
         const evalContext = {
             ...context,
             columns: columnsProxy,
-            timeseries: timeseriesFunc,
-            getItem: getItemFunc,
             now: Math.floor(Date.now() / 1000)
         };
 
-        const result = expr.evaluate(evalContext);
+        const result = withScope(
+            { getItem: getItemFunc, timeseries: timeseriesFunc },
+            () => expr.evaluate(evalContext)
+        );
         // NaN / Infinity (e.g. division by zero) are treated as "no value"
         if (typeof result === "number" && !Number.isFinite(result)) return null;
         return result;
@@ -157,8 +160,6 @@ export function getEvaluationError(expression: string, item: object): string | n
         parser.parse(expression).evaluate({
             item,
             columns: {},
-            timeseries: () => null,
-            getItem: () => undefined,
             now: Math.floor(Date.now() / 1000),
         } as any);
         return null;
