@@ -36,4 +36,4 @@ export const useMappingsStore = create<MappingsState>((set, get) => ({
 }));
 
 // Initialize mappings on store creation
-useMappingsStore.getState().loadMappings();
+if (typeof window !== "undefined") useMappingsStore.getState().loadMappings();

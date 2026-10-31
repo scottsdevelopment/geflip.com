@@ -5,14 +5,14 @@ import { PRESET_FILTERS } from "./presets";
 export async function loadFilters(): Promise<SavedFilter[]> {
     const saved = await storage.get<SavedFilter[]>(STORAGE_KEYS.FILTERS);
 
-    if (!saved) {
+    if (!saved || !Array.isArray(saved)) {
         await saveFilters(PRESET_FILTERS);
         return PRESET_FILTERS;
     }
 
     // Migration: Ensure all filters have expressions array
     const migrated = saved.map(f => {
-        if (!f.expressions) {
+        if (!Array.isArray(f.expressions)) {
             return { ...f, expressions: [] };
         }
         return f;

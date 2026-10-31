@@ -10,6 +10,7 @@ import { useItemsStore } from "@/stores/useItemsStore";
 import { useState, useEffect } from "react";
 import { BUY_ICON, SELL_ICON } from "@/lib/constants/icons";
 import { getCurrencyClass } from "@/lib/currency";
+import { afterTax } from "@/lib/geTax";
 
 interface ItemDetailsProps {
     item: ItemMapping;
@@ -61,7 +62,7 @@ export default function ItemDetails({ item, price, volume }: ItemDetailsProps) {
         return `${Math.floor(hours / 24)}d ago`;
     };
 
-    const margin = currentPrice.high && currentPrice.low ? currentPrice.high * 0.98 - currentPrice.low : 0;
+    const margin = currentPrice.high && currentPrice.low ? afterTax(currentPrice.high) - currentPrice.low : 0;
     const roi = currentPrice.low ? (margin / currentPrice.low) * 100 : 0;
     const potentialProfit = margin * (item.limit || 0);
     const alchProfit = item.highalch && currentPrice.low ? item.highalch - currentPrice.low : 0;

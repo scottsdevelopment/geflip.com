@@ -30,8 +30,8 @@
   --color-osrs-nav-inactive: #d1c6a6;
   --color-osrs-icon-accent: #c5a465;
 
-  --font-main: 'Inter', sans-serif;
-  --font-header: 'Cinzel', serif;
+  --font-main: var(--font-inter), 'Inter', sans-serif;
+  --font-header: var(--font-cinzel), 'Cinzel', serif;
 }
 
 :root {

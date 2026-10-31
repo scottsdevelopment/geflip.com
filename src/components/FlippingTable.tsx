@@ -31,7 +31,9 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
     const handleColumnReorder = useColumnsStore(state => state.handleColumnReorder);
     const handleToggleColumn = useColumnsStore(state => state.handleToggleColumn);
     const savedFilters = useFiltersStore(state => state.savedFilters);
-    const isFavorite = useFavoritesStore(state => state.isFavorite);
+    // Subscribe to the favorites set itself so filters like "Favorites Only" re-run when it changes
+    const favorites = useFavoritesStore(state => state.favorites);
+    const fetchError = useItemsStore(state => state.error);
 
     // UI state from store
     const searchQuery = useUIStore(state => state.searchQuery);
@@ -67,6 +69,9 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
             setUpdateTrigger(prev => prev + 1);
         });
     }, [cache]);
+
+    // Stop the cache's cleanup/flush timers when the table unmounts
+    useEffect(() => () => cache.destroy(), [cache]);
 
     // Pre-fetch timeseries logic
     const timeseriesIntervals = useMemo(() => {
@@ -107,7 +112,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
         // 2. Apply Filters & Strategies
         return candidateItems.flatMap(item => {
             // Inject favorite status for evaluation
-            const itemWithFav = { ...item, favorite: isFavorite(item.id) };
+            const itemWithFav = { ...item, favorite: favorites.has(item.id) };
             const results = evaluateFilters(itemWithFav, filters, columns, items);
 
             if (results.length === 0) return []; // Filtered out
@@ -122,7 +127,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                 };
             });
         });
-    }, [items, searchQuery, filters, columns, updateTrigger, isFavorite]);
+    }, [items, searchQuery, filters, columns, updateTrigger, favorites]);
 
     // Auto-enable/disable Action column based on whether actions exist
     useEffect(() => {
@@ -143,23 +148,17 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
     const sortedItems = useMemo(() => {
         const sortCol = columns.find(c => c.id === sortKey);
 
-        return [...processedItems].sort((a, b) => {
-            let aVal: any;
-            let bVal: any;
+        // Evaluate the sort key once per row (not twice per comparison)
+        const keyOf = (row: any) => {
+            if (sortCol) return evaluateColumn(sortCol, { item: row, cache }, columns, cache, undefined, 0, items);
+            return sortKey === "_action" ? row._action : row[sortKey];
+        };
+        const normalize = (v: any) => (typeof v === "number" && !Number.isFinite(v) ? null : v);
+        const keyed = processedItems.map(row => ({ row, key: normalize(keyOf(row)) }));
 
-            if (sortCol) {
-                aVal = evaluateColumn(sortCol, { item: a, cache }, columns, cache, undefined, 0, items);
-                bVal = evaluateColumn(sortCol, { item: b, cache }, columns, cache, undefined, 0, items);
-            } else {
-                // Handle special _action column or standard props
-                if (sortKey === "_action") {
-                    aVal = (a as any)._action;
-                    bVal = (b as any)._action;
-                } else {
-                    aVal = (a as any)[sortKey];
-                    bVal = (b as any)[sortKey];
-                }
-            }
+        return keyed.sort((x, y) => {
+            const aVal = x.key;
+            const bVal = y.key;
 
             // Handle null/undefined values - always push to bottom
             if ((aVal === null || aVal === undefined) && (bVal === null || bVal === undefined)) return 0;
@@ -183,8 +182,8 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
             }
 
             return 0;
-        });
-    }, [processedItems, sortKey, sortDirection, columns, cache, items]);
+        }).map(k => k.row);
+    }, [processedItems, sortKey, sortDirection, columns, cache, items, updateTrigger]);
 
     // Pagination
     const paginatedItems = useMemo(() => {
@@ -279,6 +278,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                                 handleColumnReorder(draggedId, col.id);
                                             }}
                                             onClick={() => handleSort(col.id)}
+                                            aria-sort={sortKey === col.id ? (sortDirection === "asc" ? "ascending" : "descending") : undefined}
                                             colSpan={col.id === "name" ? 2 : 1}
                                             className={`sticky left-0 top-0 z-20 p-3 h-12 bg-osrs-button text-osrs-text-dark font-header font-bold cursor-pointer border-b-2 border-osrs-border hover:bg-osrs-button-hover transition-colors relative whitespace-nowrap shadow-sm text-center ${sortKey === col.id ? "bg-osrs-button-hover" : ""}`}
                                         >
@@ -293,7 +293,7 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                                     {col.id === "favorite" ? (
                                                         <Heart size={16} className="text-osrs-primary fill-current" />
                                                     ) : (
-                                                        <span>{col.name}</span>
+                                                        <span className="inline-block max-w-[12rem] truncate align-bottom">{col.name}</span>
                                                     )}
                                                     <SortIcon columnId={col.id} />
                                                 </div>
@@ -312,10 +312,15 @@ export default function FlippingTable({ filters: externalFilters }: FlippingTabl
                                         colSpan={enabledColumns.length + 1 + (showActionColumn ? 1 : 0)}
                                         className="text-center p-8 text-osrs-text bg-osrs-panel"
                                     >
-                                        {searchQuery ? (
+                                        {fetchError && items.length === 0 ? (
+                                            <div role="alert">
+                                                <p className="text-lg font-bold mb-2">Prices unavailable</p>
+                                                <p className="text-sm opacity-75">{fetchError}</p>
+                                            </div>
+                                        ) : searchQuery ? (
                                             <div>
                                                 <p className="text-lg font-bold mb-2">No items found</p>
-                                                <p className="text-sm opacity-75">No items match "{searchQuery}"</p>
+                                                <p className="text-sm opacity-75">No items match &quot;{searchQuery}&quot;</p>
                                             </div>
                                         ) : (
                                             <div>

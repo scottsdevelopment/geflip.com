@@ -3,13 +3,14 @@ import { notFound } from "next/navigation";
 import ItemPageClient from "./ItemPageClient";
 import { fetchAllMappings, fetchItemDataBySlug, getItemImageUrl } from "@/lib/api";
 import { generateSlug } from "@/lib/slug";
+import { afterTax } from "@/lib/geTax";
 
 // Required for static export - generate paths for all items
 export async function generateStaticParams() {
     const mappings = await fetchAllMappings();
-    return mappings.map((item) => ({
-        slug: generateSlug(item.name),
-    }));
+    // Several items share a name (and therefore a slug); emit each slug once
+    const slugs = new Set(mappings.map((item) => generateSlug(item.name)));
+    return Array.from(slugs, (slug) => ({ slug }));
 }
 
 interface PageProps {
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
     if (!itemData) {
         return {
-            title: "Item Not Found | GEFlip.com",
+            title: "Item Not Found",
             description: "The requested OSRS item could not be found.",
         };
     }
@@ -30,11 +31,15 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { mapping: item, price } = itemData;
     const buyPrice = price.high;
     const sellPrice = price.low;
-    const margin = buyPrice - sellPrice;
-    const roi = sellPrice > 0 ? ((margin / sellPrice) * 100).toFixed(2) : "0";
+    const hasPrices = buyPrice > 0 && sellPrice > 0;
+    // Margin after GE tax, matching the table and item page
+    const margin = hasPrices ? afterTax(buyPrice) - sellPrice : 0;
+    const roi = hasPrices ? ((margin / sellPrice) * 100).toFixed(2) : "0";
 
     const title = `${item.name} - Live Price, Graph, Flipping Margin`;
-    const description = `Check real-time OSRS GE price for ${item.name}. Current buy: ${buyPrice.toLocaleString()} gp, sell: ${sellPrice.toLocaleString()} gp. Flipping margin: ${margin.toLocaleString()} gp (${roi}%)`;
+    const description = hasPrices
+        ? `Check the real-time OSRS GE price for ${item.name}. Buy: ${buyPrice.toLocaleString()} gp, sell: ${sellPrice.toLocaleString()} gp. Flipping margin after tax: ${margin.toLocaleString()} gp (${roi}%).`
+        : `Check the real-time OSRS Grand Exchange price, price history graph and flipping margin for ${item.name}.`;
     const imageUrl = getItemImageUrl(item.name);
 
     return {
@@ -52,7 +57,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
             url: `https://geflip.com/item/${slug}`,
         },
         twitter: {
-            card: "summary_large_image",
+            // Item icons are small and square, so the large-image card would be blurry
+            card: "summary",
             title,
             description,
             images: [imageUrl],
@@ -71,7 +77,7 @@ export default async function ItemPage({ params }: PageProps) {
         notFound();
     }
 
-    const { mapping: item, price } = itemData;
+    const { mapping: item } = itemData;
 
     return (
         <>
@@ -80,17 +86,18 @@ export default async function ItemPage({ params }: PageProps) {
                 dangerouslySetInnerHTML={{
                     __html: JSON.stringify({
                         "@context": "https://schema.org",
-                        "@type": "Product",
-                        name: item.name,
-                        image: getItemImageUrl(item.name),
+                        "@type": "WebPage",
+                        name: `${item.name} - OSRS Grand Exchange price`,
+                        url: `https://geflip.com/item/${slug}`,
                         description: `Old School RuneScape Grand Exchange price and flipping data for ${item.name}`,
-                        offers: {
-                            "@type": "Offer",
-                            price: price.low, // Using sell price as the offer price
-                            priceCurrency: "GP", // or custom currency for OSRS GP if schema supports it, but GP isn't standard ISO. Usually use "GBP" or just omit currency if not real money. But guide said "GP". Schema expects ISO 4217. I'll stick to guide's "GP" but it might be invalid. Actually guide used "GP".
-                            availability: "https://schema.org/InStock",
+                        primaryImageOfPage: getItemImageUrl(item.name),
+                        about: {
+                            "@type": "Thing",
+                            name: item.name,
+                            description: item.examine,
+                            image: getItemImageUrl(item.name),
                         },
-                    }),
+                    }).replace(/</g, "\\u003c"), // keep "</script>" in data from closing the tag
                 }}
             />
             <ItemPageClient slug={slug} />

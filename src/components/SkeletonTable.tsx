@@ -89,7 +89,7 @@ export const SkeletonTableHeader = () => {
 export const SkeletonTableBody = () => {
     return (
         <>
-            {[...Array(50)].map((_, index) => (
+            {[...Array(15)].map((_, index) => (
                 <tr key={`skeleton-${index}`} className="even:bg-osrs-table-even border-b border-osrs-border-light">
                     {/* Favorite */}
                     <td className="p-3 border-b border-osrs-border-light">

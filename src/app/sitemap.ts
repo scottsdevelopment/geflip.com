@@ -33,8 +33,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ];
 
     // Dynamic item routes
-    const itemRoutes: MetadataRoute.Sitemap = items.map((item) => ({
-        url: `${baseUrl}/item/${generateSlug(item.name)}`,
+    // Several items share a name/slug; list each URL once
+    const slugs = Array.from(new Set(items.map((item) => generateSlug(item.name))));
+    const itemRoutes: MetadataRoute.Sitemap = slugs.map((slug) => ({
+        url: `${baseUrl}/item/${slug}`,
         lastModified: new Date(),
         changeFrequency: 'hourly',
         priority: 0.8,

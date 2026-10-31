@@ -12,6 +12,7 @@ import { TimeseriesCache } from "@/lib/timeseries/cache";
 import { Spinner } from "./Spinner";
 import { NON_MEMBER_ICON, MEMBER_ICON } from "@/lib/constants/icons";
 import { useFavoritesStore } from "@/stores/useFavoritesStore";
+import { useItemsStore } from "@/stores/useItemsStore";
 import { Heart } from "lucide-react";
 import { getCurrencyClass } from "@/lib/currency";
 
@@ -58,6 +59,8 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
     // Subscribe to this specific item's favorite status
     const isFavoriteItem = useFavoritesStore(state => state.isFavorite(item.id));
     const toggleFavorite = useFavoritesStore(state => state.toggleFavorite);
+    // All items, so expressions using getItem(...) can look up other items
+    const allItems = useItemsStore(state => state.items);
 
     // Subscribe to this item's timeseries updates
     useEffect(() => {
@@ -117,7 +120,7 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
     return (
         <tr className="even:bg-osrs-table-even hover:bg-osrs-table-hover transition-colors">
             {enabledColumns.map((col) => {
-                const value = evaluateColumn(col, { item, cache }, columns, cache);
+                const value = evaluateColumn(col, { item, cache }, columns, cache, undefined, 0, allItems);
                 const formatted = formatColumnValue(value, col);
                 const isLoading = loadingColumns.has(col.id) && value === null;
 
@@ -141,6 +144,8 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
                                     <Link
                                         href={`/item/${generateSlug(item.name)}`}
                                         className="w-6 h-6 flex items-center justify-center text-inherit no-underline"
+                                        tabIndex={-1}
+                                        aria-hidden="true"
                                     >
                                         <ItemImage name={item.name} />
                                     </Link>
@@ -169,7 +174,9 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
                                     e.stopPropagation();
                                     toggleFavorite(item.id);
                                 }}
-                                className="focus:outline-none hover:scale-110 transition-transform flex items-center justify-center w-full h-full"
+                                className="focus:outline-none focus-visible:ring-2 focus-visible:ring-osrs-accent rounded hover:scale-110 transition-transform flex items-center justify-center w-full h-full"
+                                aria-label={isFavoriteItem ? `Remove ${item.name} from favourites` : `Add ${item.name} to favourites`}
+                                aria-pressed={isFavoriteItem}
                             >
                                 <Heart
                                     className={`w-4 h-4 ${isFavoriteItem ? "fill-osrs-primary text-osrs-primary" : "text-osrs-text opacity-40 hover:opacity-100"}`}
@@ -235,9 +242,8 @@ const TableRow = memo(({ item, columns, cache, action, showActionColumn }: Table
     if (prevProps.action !== nextProps.action) return false;
     if (prevProps.showActionColumn !== nextProps.showActionColumn) return false;
 
-    const prevEnabled = prevProps.columns.filter(c => c.enabled).map(c => c.id).join(",");
-    const nextEnabled = nextProps.columns.filter(c => c.enabled).map(c => c.id).join(",");
-    if (prevEnabled !== nextEnabled) return false;
+    // Any column change (expression, format, name, order, visibility) must re-render the row
+    if (prevProps.columns !== nextProps.columns) return false;
 
     if (prevProps.item !== nextProps.item) return false;
     if (prevProps.cache !== nextProps.cache) return false;

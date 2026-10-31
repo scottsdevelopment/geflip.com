@@ -216,7 +216,7 @@ export default function SavedFilterManager({
                         <div className="lg:col-span-1 border-r border-osrs-border pr-6">
                             {/* Mode Toggle */}
                             <div className="flex items-center justify-between pb-3 border-b border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text">Create Filter</h3>
+                                <h2 className="font-header font-bold text-osrs-text">Create Filter</h2>
                                 <button
                                     onClick={handleToggleMode}
                                     className="flex items-center gap-1 px-2 py-1 text-xs font-bold bg-gray-200 text-gray-700 rounded hover:bg-gray-300 transition-colors"
@@ -290,7 +290,7 @@ export default function SavedFilterManager({
                         {/* Right Column: Filter List (66%) */}
                         <div className="lg:col-span-2">
                             <div className="flex justify-between items-center pb-4 border-b-2 border-osrs-border mb-4">
-                                <h3 className="font-header font-bold text-osrs-text">Apply Filters</h3>
+                                <h2 className="font-header font-bold text-osrs-text">Apply Filters</h2>
                                 <div className="text-sm text-osrs-text">
                                     {filters.filter((f) => f.enabled).length} active
                                 </div>
@@ -300,9 +300,9 @@ export default function SavedFilterManager({
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4 max-h-[500px] overflow-y-auto pr-2">
                                 {Object.entries(groupedFilters).map(([groupName, groupFilters]) => (
                                     <div key={groupName} className="space-y-2">
-                                        <h4 className="text-sm font-header font-bold text-osrs-text border-b border-osrs-border pb-1">
+                                        <h3 className="text-sm font-header font-bold text-osrs-text border-b border-osrs-border pb-1">
                                             {groupName}
-                                        </h4>
+                                        </h3>
                                         {groupFilters.map((filter) => (
                                             <div
                                                 key={filter.id}
@@ -318,18 +318,23 @@ export default function SavedFilterManager({
                                                     <span title={filter.description}>{filter.name}</span>
                                                 </label>
 
-                                                <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {/* Always visible on touch screens; revealed on hover/focus on desktop */}
+                                                <div className="flex gap-1 opacity-100 lg:opacity-0 lg:group-hover:opacity-100 lg:group-focus-within:opacity-100 transition-opacity">
                                                     <button
                                                         onClick={() => handleEdit(filter)}
-                                                        className="p-1 text-gray-500 hover:text-osrs-accent"
+                                                        className="p-1 text-gray-600 hover:text-osrs-accent"
                                                         title="Edit"
+                                                        aria-label={`Edit ${filter.name} filter`}
                                                     >
                                                         <Edit2 className="w-3 h-3" />
                                                     </button>
                                                     <button
-                                                        onClick={() => handleDeleteFilter(filter.id)}
-                                                        className="p-1 text-gray-500 hover:text-red-600"
+                                                        onClick={() => {
+                                                            if (window.confirm(`Delete the "${filter.name}" filter?`)) handleDeleteFilter(filter.id);
+                                                        }}
+                                                        className="p-1 text-gray-600 hover:text-red-600"
                                                         title="Delete"
+                                                        aria-label={`Delete ${filter.name} filter`}
                                                     >
                                                         <Trash2 className="w-3 h-3" />
                                                     </button>

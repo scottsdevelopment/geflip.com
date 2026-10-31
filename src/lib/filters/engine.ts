@@ -1,10 +1,14 @@
-import { Parser } from "expr-eval";
+import { Parser } from "expr-eval-fork";
 import { ProcessedItem } from "../types";
 import { SavedFilter, FilterResult } from "./types";
 import { CustomColumn } from "../columns/types";
 import { evaluateColumn } from "../columns/engine";
+import { geTax } from "../geTax";
+import { registerScopedFunctions, withScope } from "../expressionScope";
 
 const parser = new Parser();
+registerScopedFunctions(parser);
+parser.functions.tax = (price: number) => geTax(Number(price));
 const expressionCache = new Map<string, any>();
 
 // Helper to safely evaluate filter expression
@@ -41,7 +45,7 @@ export function evaluateFilter(
             if (typeof prop === "string") {
                 const col = customColumns.find(c => c.id === prop);
                 if (col) {
-                    return evaluateColumn(col, { item }, customColumns);
+                    return evaluateColumn(col, { item }, customColumns, undefined, undefined, 0, allItems);
                 }
             }
             return undefined;
@@ -68,9 +72,10 @@ export function evaluateFilter(
 
     const context = {
         item,
-        columns: columnsProxy,
-        getItem: getItemFunc
+        columns: columnsProxy
     };
+    // getItem() is a scoped parser function (expr-eval-fork rejects functions in the context)
+    const scope = { getItem: getItemFunc };
 
     // Handle legacy filters or missing expressions
     const rawExpressions = filter.expressions || [];
@@ -82,7 +87,7 @@ export function evaluateFilter(
 
     // Iterate through expressions (OR logic within a single filter)
     for (const expr of expressions) {
-        const isMatch = evaluateExpression(expr.code, context);
+        const isMatch = withScope(scope, () => evaluateExpression(expr.code, context));
         if (isMatch) {
             let highlightItem: ProcessedItem | undefined;
 
@@ -90,7 +95,7 @@ export function evaluateFilter(
             if (expr.highlightItem) {
                 try {
                     // Try to evaluate as an expression first
-                    const result = parser.evaluate(expr.highlightItem, context as any);
+                    const result = withScope(scope, () => parser.evaluate(expr.highlightItem!, context as any));
 
                     // If result is an object (item), use it
                     if (typeof result === 'object' && result !== null && 'id' in (result as any)) {

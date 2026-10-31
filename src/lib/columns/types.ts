@@ -6,7 +6,7 @@ export interface CustomColumn {
     name: string;
     expression: string;
     type: "number" | "string" | "boolean";
-    format?: "currency" | "percentage" | "decimal" | "relativeTime";
+    format?: "currency" | "compact" | "percentage" | "decimal" | "relativeTime";
     enabled: boolean;
     isPreset?: boolean;
     group?: string;

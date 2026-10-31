@@ -1,6 +1,6 @@
 "use client";
 
-import { fetchItemDataBySlug } from "@/lib/api";
+import { fetchItemData, fetchItemDataBySlug } from "@/lib/api";
 import ItemDetails from "@/components/ItemDetails";
 import ItemDetailsSkeleton from "@/components/ItemDetailsSkeleton";
 import { useEffect, useState } from "react";
@@ -36,6 +36,25 @@ export default function ItemPageClient({ slug }: ItemPageClientProps) {
 
             if (mapping) {
                 const processedItem = items.find(i => i.id === mapping.id);
+
+                // Items with no recent trades/volume are not part of the flipping list.
+                // Once that list has loaded, fetch this item's price on its own instead of
+                // showing the skeleton forever.
+                if (!processedItem && !itemsLoading) {
+                    let cancelled = false;
+                    fetchItemData(mapping.id).then(itemData => {
+                        if (cancelled) return;
+                        setData(itemData ?? { mapping, price: { high: 0, highTime: 0, low: 0, lowTime: 0 }, volume: 0 });
+                        setLoading(false);
+                    });
+                    return () => { cancelled = true; };
+                }
+
+                if (!processedItem) {
+                    setLoading(true);
+                    return;
+                }
+
                 const price: PriceData = processedItem ? {
                     high: processedItem.high,
                     highTime: processedItem.highTime,
@@ -70,10 +89,6 @@ export default function ItemPageClient({ slug }: ItemPageClientProps) {
             if (!cancelled) {
                 setData(itemData);
                 setLoading(false);
-
-                if (itemData) {
-
-                }
             }
         }
         loadData();
@@ -81,14 +96,9 @@ export default function ItemPageClient({ slug }: ItemPageClientProps) {
         return () => {
             cancelled = true;
         };
-    }, [slug, mappings, items, storeLoading]);
+    }, [slug, mappings, items, storeLoading, itemsLoading]);
 
-    // Show loading skeleton if:
-    // 1. Still loading data
-    // 2. Have data but it's incomplete (missing price information)
-    const showSkeleton = loading || (data && (!data.price.high || !data.price.low));
-
-    if (showSkeleton) {
+    if (loading) {
         return <ItemDetailsSkeleton />;
     }
 
@@ -97,8 +107,8 @@ export default function ItemPageClient({ slug }: ItemPageClientProps) {
     }
 
     return (
-        <main>
+        <div>
             <ItemDetails item={data.mapping} price={data.price} volume={data.volume} />
-        </main>
+        </div>
     );
 }
